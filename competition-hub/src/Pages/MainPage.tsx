@@ -16,8 +16,8 @@ export default function MainPage() {
                 </Button>
             </div>
             <div className="flex flex-col gap-3 mt-10">
-                <ListCard title="Új feladat!" descr="Lorem ipsum"/>
-                <ListCard title="Eredmények" descr="Lorem ipsum Lorem ipsum"/>
+                <ListCard title="Új feladat!" descr="Lorem ipsum" link="/"/>
+                <ListCard title="Eredmények" descr="Lorem ipsum Lorem ipsum" link="/"/>
             </div>
         </>
     );

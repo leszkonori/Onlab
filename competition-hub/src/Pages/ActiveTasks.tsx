@@ -16,8 +16,12 @@ export default function ActiveTasks() {
             </div>
             <PageTitle>Aktív feladatok</PageTitle>
             <div className="flex flex-col gap-3 mt-10">
-                <ListCard title="React feladat" descr="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
-                <ListCard title="Angular feladat" descr="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+                <ListCard title="React feladat" descr="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." 
+                    link="/apply"
+                />
+                <ListCard title="Angular feladat" descr="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                    link="/apply"
+                />
             </div>
         </>
     );
