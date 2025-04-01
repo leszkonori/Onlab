@@ -3,6 +3,7 @@ import './App.css'
 import MainPage from "./Pages/MainPage";
 import ActiveTasks from "./Pages/ActiveTasks";
 import Apply from "./Pages/Apply";
+import Profile from "./Pages/Profile";
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" index element={<MainPage />} />
         <Route path="/active-tasks" element={<ActiveTasks />} />
         <Route path="/apply" element={<Apply />} />
+        <Route path="/profile" element={<Profile/>} />
       </Routes>
     </BrowserRouter>
   );
