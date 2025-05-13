@@ -1,7 +1,9 @@
 package backend.competition_hub.controllers;
 
+import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
+import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.RoundRepository;
 import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +18,12 @@ public class TaskController {
 
     private final TaskRepository taskRepository;
     private final RoundRepository roundRepository;
+    private final ApplicationRepository applicationRepository;
 
-    public TaskController(TaskRepository taskRepository, RoundRepository roundRepository) {
+    public TaskController(TaskRepository taskRepository, RoundRepository roundRepository, ApplicationRepository applicationRepository) {
         this.taskRepository = taskRepository;
         this.roundRepository = roundRepository;
+        this.applicationRepository = applicationRepository;
     }
 
     @GetMapping
@@ -33,6 +37,9 @@ public class TaskController {
                 .map(task -> {
                     List<Round> rounds = roundRepository.findByTaskId(id);
                     task.setRounds(rounds);
+
+                    List<Application> applications = applicationRepository.findByTaskId(id); // Lekérjük az applications-t
+                    task.setApplications(applications);
                     return ResponseEntity.ok(task);
                 })
                 .orElse(ResponseEntity.notFound().build());

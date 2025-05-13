@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Task.css';
-import { RoundType } from '../types';
+import { ApplicationType, RoundType } from '../types';
 
-export default function Task({ id, title, descr, date, rounds, editable }: { id: number, title: string, descr: string, date: string, rounds?: RoundType[], editable: boolean }) {
+export default function Task({ id, title, descr, date, rounds, applications, editable }: { id: number, title: string, descr: string, date: string, rounds?: RoundType[], applications?: ApplicationType[], editable: boolean }) {
 
     const [editing, setEditing] = useState(false);
     const [titleValue, setTitleValue] = useState(title);
@@ -129,6 +129,27 @@ export default function Task({ id, title, descr, date, rounds, editable }: { id:
                                                 <p>Deadline: {round.deadline}</p>
                                             </>
                                         )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {applications && applications.length > 0 && (
+                        <div className="mt-4">
+                            <h4 className="flex justify-end">Applications:</h4>
+                            <div>
+                                {applications.map((application, index) => (
+                                    <div key={index} className="application-container">
+                                        <p>File Path: {application.filePath}</p>
+                                        <p>Application Date: {new Date(application.applicationDate).toLocaleDateString()}</p>
+                                        <a
+                                            href={`http://localhost:8081/uploads/${application.filePath}`} // A filePath elérhetősége a szerveren
+                                            download
+                                            style={{color: "black"}}
+                                        >
+                                            Download
+                                        </a>
                                     </div>
                                 ))}
                             </div>

@@ -37,8 +37,7 @@ public class ApplicationController {
 
     @PostMapping("/{taskId}")
     public ResponseEntity<String> handleFileUpload(@PathVariable Long taskId,
-                                                   @RequestParam("file") MultipartFile file,
-                                                   Principal principal) {
+                                                   @RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
@@ -55,11 +54,11 @@ public class ApplicationController {
             file.transferTo(filePath.toFile());
 
             // Felhasználó lekérése a Principalból
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
-            }
+//            String username = principal.getName();
+//            User user = userRepository.findByUsername(username);
+//            if (user == null) {
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
+//            }
 
             // Feladat lekérése az ID alapján
             Task task = taskRepository.findById(taskId).orElse(null);
@@ -70,7 +69,8 @@ public class ApplicationController {
             // Application entitás létrehozása és mentése
             Application application = new Application();
             application.setTask(task);
-            application.setUser(user);
+            //application.setUser(user);
+            application.setUser(null);
             application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
             application.setApplicationDate(new Date());
             applicationRepository.save(application);

@@ -1,5 +1,6 @@
 package backend.competition_hub.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,10 +16,11 @@ public class Application {
 
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
+    @JsonBackReference(value = "task-application")
     private Task task;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     private String filePath;

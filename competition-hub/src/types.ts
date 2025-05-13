@@ -11,6 +11,7 @@ export type TaskType = {
     applicationDeadline: string;
     creator: string;
     rounds?: RoundType[];
+    applications?: ApplicationType[];
 };
 
 export type User = {
