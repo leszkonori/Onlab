@@ -1,0 +1,16 @@
+/* h2 {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 500;
+} */
+
+
+h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
