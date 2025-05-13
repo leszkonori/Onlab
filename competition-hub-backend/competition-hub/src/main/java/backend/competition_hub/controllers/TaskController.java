@@ -55,6 +55,13 @@ public class TaskController {
                     task.setTitle(updatedTask.getTitle());
                     task.setDescription(updatedTask.getDescription());
                     task.setApplicationDeadline(updatedTask.getApplicationDeadline());
+                    if (updatedTask.getRounds() != null) {
+                        for (Round round : updatedTask.getRounds()) {
+                            round.setTask(task);  // Újra összekapcsoljuk a taskot a rounddal
+                        }
+                        roundRepository.saveAll(updatedTask.getRounds()); // Mentjük a frissített roundokat
+                    }
+
                     Task savedTask = taskRepository.save(task);
                     return ResponseEntity.ok(savedTask);
                 })
