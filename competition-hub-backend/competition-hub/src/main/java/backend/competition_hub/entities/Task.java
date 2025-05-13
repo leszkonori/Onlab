@@ -1,7 +1,9 @@
 package backend.competition_hub.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -18,12 +20,13 @@ public class Task {
     private String description;
 
     @Column(nullable = false)
-    private LocalDateTime applicationDeadline;
+    private LocalDate applicationDeadline;
 
     @Column(nullable = false)
     private String creator;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Round> rounds;
 
     // Getterek és setterek
@@ -52,11 +55,11 @@ public class Task {
         this.description = description;
     }
 
-    public LocalDateTime getApplicationDeadline() {
+    public LocalDate getApplicationDeadline() {
         return applicationDeadline;
     }
 
-    public void setApplicationDeadline(LocalDateTime applicationDeadline) {
+    public void setApplicationDeadline(LocalDate applicationDeadline) {
         this.applicationDeadline = applicationDeadline;
     }
 

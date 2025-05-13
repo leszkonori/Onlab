@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Task.css';
+import { RoundType } from '../types';
 
-export default function Task({ id, title, descr, date, editable }: { id: number, title: string, descr: string, date: string, editable: boolean }) {
+export default function Task({ id, title, descr, date, rounds, editable }: { id: number, title: string, descr: string, date: string, rounds?: RoundType[],editable: boolean }) {
 
     const [editing, setEditing] = useState(false);
     const [titleValue, setTitleValue] = useState(title);
@@ -92,6 +93,18 @@ export default function Task({ id, title, descr, date, editable }: { id: number,
                         )
                         }
                     </div>
+                    {rounds && rounds.length > 0 && (
+                        <div className="mt-4">
+                            <h3>Rounds:</h3>
+                            {rounds.map((round, idx) => (
+                                <div key={idx} className="mb-2 p-2 border rounded bg-gray-100">
+                                    <p><strong>Round {idx + 1}</strong></p>
+                                    <p><strong>Description:</strong> {round.description}</p>
+                                    <p><strong>Deadline:</strong> {new Date(round.deadline).toLocaleString()}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
             {editable && (

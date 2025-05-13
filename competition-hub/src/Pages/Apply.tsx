@@ -76,6 +76,7 @@ export default function Apply() {
                 title={task.title}
                 descr={task.description}
                 date={task.applicationDeadline}
+                rounds={task.rounds}
                 editable={user?.username === task.creator}
             />}
             {task?.creator !== user?.username && (<>

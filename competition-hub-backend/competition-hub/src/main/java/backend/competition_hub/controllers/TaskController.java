@@ -2,6 +2,7 @@ package backend.competition_hub.controllers;
 
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
+import backend.competition_hub.repositories.RoundRepository;
 import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +15,11 @@ import java.util.List;
 public class TaskController {
 
     private final TaskRepository taskRepository;
+    private final RoundRepository roundRepository;
 
-    public TaskController(TaskRepository taskRepository) {
+    public TaskController(TaskRepository taskRepository, RoundRepository roundRepository) {
         this.taskRepository = taskRepository;
+        this.roundRepository = roundRepository;
     }
 
     @GetMapping
@@ -27,7 +30,11 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
         return taskRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(task -> {
+                    List<Round> rounds = roundRepository.findByTaskId(id);
+                    task.setRounds(rounds);
+                    return ResponseEntity.ok(task);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 

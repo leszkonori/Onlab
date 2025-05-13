@@ -1,9 +1,16 @@
+export type RoundType = {
+    id?: number;
+    description: string;
+    deadline: string;
+}
+
 export type TaskType = {
     id: number;
     title: string;
     description: string;
     applicationDeadline: string;
     creator: string;
+    rounds?: RoundType[];
 };
 
 export type User = {
