@@ -10,6 +10,8 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
     const [descrValue, setDescrValue] = useState(descr);
     const [dateValue, setDateValue] = useState(date);
     const [roundsValue, setRoundsValue] = useState(rounds || []);
+    const [applicationStates, setApplicationStates] = useState(applications || []);
+
 
     const navigate = useNavigate();
 
@@ -44,6 +46,30 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         const updatedRounds = [...roundsValue];
         updatedRounds[index] = { ...updatedRounds[index], [field]: value };
         setRoundsValue(updatedRounds);
+    };
+
+    const handleReviewChange = (index: number, newReview: string) => {
+        const updated = [...applicationStates];
+        updated[index] = { ...updated[index], review: newReview };
+        setApplicationStates(updated);
+    };
+
+    const saveReview = async (appId: number, review: string) => {
+        try {
+            const res = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ review }),
+            });
+
+            if (!res.ok) throw new Error('Failed to save review');
+            alert('Review saved!');
+        } catch (error) {
+            console.error('Error saving review:', error);
+            alert('Could not save review');
+        }
     };
 
     async function handleDelete() {
@@ -135,21 +161,37 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                         </div>
                     )}
 
-                    {applications && applications.length > 0 && (
+                    {applicationStates.length > 0 && (
                         <div className="mt-4">
                             <h4 className="flex justify-end">Applications:</h4>
                             <div>
-                                {applications.map((application, index) => (
+                                {applicationStates.map((application, index) => (
                                     <div key={index} className="application-container">
+                                        <p>Applicant: {application.user.username}</p>
                                         <p>File Path: {application.filePath}</p>
                                         <p>Application Date: {new Date(application.applicationDate).toLocaleDateString()}</p>
                                         <a
-                                            href={`http://localhost:8081/uploads/${application.filePath}`} // A filePath elérhetősége a szerveren
+                                            href={`http://localhost:8081/uploads/${application.filePath}`}
                                             download
-                                            style={{color: "black"}}
+                                            style={{ color: 'black' }}
                                         >
                                             Download
                                         </a>
+
+                                        {editable ? (
+                                            <div className="review-editor">
+                                                <textarea
+                                                    value={application.review || ''}
+                                                    placeholder="Write review..."
+                                                    onChange={(e) => handleReviewChange(index, e.target.value)}
+                                                />
+                                                <button onClick={() => saveReview(application.id, applicationStates[index].review || '')}>
+                                                    Save Review
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            application.review && <p><strong>Review:</strong> {application.review}</p>
+                                        )}
                                     </div>
                                 ))}
                             </div>

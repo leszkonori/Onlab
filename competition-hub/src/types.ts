@@ -24,7 +24,8 @@ export type User = {
 export type ApplicationType = {
     id: number;
     task: TaskType;
-    user: any; // A User típusa, ha van
+    user: User;
     filePath: string;
     applicationDate: string;
+    review?: string;
 }

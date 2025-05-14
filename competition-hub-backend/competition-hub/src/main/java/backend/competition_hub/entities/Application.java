@@ -20,11 +20,13 @@ public class Application {
     private Task task;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
     private String filePath;
     private Date applicationDate;
+    private String review;
 
     public Application() {}
 

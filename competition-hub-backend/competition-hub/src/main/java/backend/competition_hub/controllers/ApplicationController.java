@@ -8,6 +8,8 @@ import backend.competition_hub.repositories.TaskRepository;
 import backend.competition_hub.repositories.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Date;
+import java.util.Map;
 
 
 @RestController
@@ -37,41 +40,45 @@ public class ApplicationController {
 
     @PostMapping("/{taskId}")
     public ResponseEntity<String> handleFileUpload(@PathVariable Long taskId,
-                                                   @RequestParam("file") MultipartFile file) {
+                                                   @RequestParam("file") MultipartFile file,
+                                                   @AuthenticationPrincipal Jwt jwt) {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
 
+        String keycloakId = jwt.getSubject(); // Keycloak user ID (sub)
+        String username = jwt.getClaimAsString("preferred_username");
+
         try {
-            // Célkönyvtár létrehozása, ha nem létezik
             Path uploadPath = Paths.get(UPLOAD_DIR + taskId);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Fájl mentése
             Path filePath = uploadPath.resolve(file.getOriginalFilename());
             file.transferTo(filePath.toFile());
 
-            // Felhasználó lekérése a Principalból
-//            String username = principal.getName();
-//            User user = userRepository.findByUsername(username);
-//            if (user == null) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
-//            }
-
-            // Feladat lekérése az ID alapján
             Task task = taskRepository.findById(taskId).orElse(null);
             if (task == null) {
                 return ResponseEntity.badRequest().body("Task not found.");
             }
 
-            // Application entitás létrehozása és mentése
+            // 👤 Felhasználó kezelése
+            User user = userRepository.findByKeycloakId(keycloakId);
+            if (user == null) {
+                // Ha a felhasználó nem létezik, új felhasználót hozunk létre
+                user = new User();
+                user.setKeycloakId(keycloakId);
+                user.setUsername(username);
+                user.setEmail(jwt.getClaimAsString("email")); // Email is kinyerhető, ha kell
+                userRepository.save(user);
+            }
+
+            // 📄 Jelentkezés mentése
             Application application = new Application();
             application.setTask(task);
-            //application.setUser(user);
-            application.setUser(null);
-            application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
+            application.setUser(user);
+            application.setFilePath(filePath.toString());
             application.setApplicationDate(new Date());
             applicationRepository.save(application);
 
@@ -80,5 +87,15 @@ public class ApplicationController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
         }
+    }
+
+
+    @PutMapping("/{id}/review")
+    public ResponseEntity<Application> updateReview(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return applicationRepository.findById(id).map(app -> {
+            app.setReview(body.get("review"));
+            applicationRepository.save(app);
+            return ResponseEntity.ok(app);
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
