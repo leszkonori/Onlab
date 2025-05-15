@@ -72,15 +72,14 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         <div className="task-container">
             <div className="grid-wrapper">
                 <div className="task-grid">
-                    <h4 className="flex justify-end">Task name:</h4>
+                    <h4>Task name:</h4>
                     <div className="flex gap-1.5">
                         {editing ? (
                             <input type="text" value={titleValue} onChange={(e) => setTitleValue(e.target.value)} />
                         ) : (
-                            <h4>{title}</h4>
+                            <p>{title}</p>
                         )}
                     </div>
-
                     <h4 className="flex justify-end">Description:</h4>
                     <div className="flex items-center gap-1.5">
                         {editing ? (

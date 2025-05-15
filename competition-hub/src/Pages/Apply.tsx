@@ -1,5 +1,4 @@
 import { Link, useParams } from "react-router-dom";
-import Button from "../Components/Button";
 import PageTitle from "../Components/PageTitle";
 import Task from "../Components/Task";
 import './Apply.css';
@@ -54,23 +53,18 @@ export default function Apply() {
     };
 
     return (
-        <div className="apply-container">
-            <div className="apply-header">
-                <div>
-                    <Button>
-                        <Link to="/">Főoldal</Link>
-                    </Button>
-                    <Button>
-                        <Link to="/profile">Profile</Link>
-                    </Button>
-                </div>
-                <div>
-                    <Button>
-                        <Link to="/active-tasks">Aktív feladatkiírások</Link>
-                    </Button>
-                </div>
+        <div className="page-container">
+            <div className="menu-container">
+                <button className="custom-button">
+                    <Link to="/">Main Page</Link>
+                </button>
+                <button className="custom-button">
+                    <Link to="/profile">Profile</Link>
+                </button>
             </div>
-            <PageTitle>Jelentkezés</PageTitle>
+            <div className="page-title-container">
+                <h2 className="page-title">{task?.title}</h2>
+            </div>
             {task && <Task
                 id={task.id}
                 title={task.title}

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Button from "../Components/Button";
+import button from "../Components/button";
 import PageTitle from "../Components/PageTitle";
 
 export default function SubmittedTask() {
@@ -7,15 +7,15 @@ export default function SubmittedTask() {
         <>
             <div className="flex justify-between">
                 <div>
-                    <Button>
+                    <button>
                         <Link to="/">Főoldal</Link>
-                    </Button>
-                    <Button>Profil</Button>
+                    </button>
+                    <button>Profil</button>
                 </div>
                 <div>
-                    <Button>
+                    <button>
                         <Link to="/active-tasks">Aktív feladatkiírások</Link>
-                    </Button>
+                    </button>
                 </div>
             </div>
             <PageTitle>Jelentkezés</PageTitle>

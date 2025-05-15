@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Button from "../Components/Button";
+import button from "../Components/button";
 import PageTitle from "../Components/PageTitle";
 import { useKeycloak } from "../KeycloakProvider";
 import '../styles/Profile.css';
@@ -34,14 +34,14 @@ export default function Profile() {
         <>
             <div className="flex justify-between">
                 <div>
-                    <Button>
+                    <button>
                         <Link to="/">Főoldal</Link>
-                    </Button>
+                    </button>
                 </div>
                 <div>
-                    <Button>
+                    <button>
                         <Link to="/active-tasks">Aktív feladatkiírások</Link>
-                    </Button>
+                    </button>
                 </div>
             </div>
             <PageTitle>Your profile</PageTitle>
