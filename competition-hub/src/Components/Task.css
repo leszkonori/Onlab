@@ -46,14 +46,28 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
-    >h4 {
-        margin-bottom: 10px;
-        text-decoration: underline;
-    }
 }
+
+.round-title {
+    margin-bottom: 10px;
+    text-decoration: underline;
+}
+
 .add-round-container button {
     width: fit-content;
 }
+
 .add-round-container h4 {
     font-size: 16px;
+}
+
+.task-container p {
+    align-self: center;
+}
+
+.round-container {
+    margin-bottom: 12px;
+}
+.task-grid.edit{
+    grid-template-columns: minmax(0px, 500px) auto;
 }

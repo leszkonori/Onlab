@@ -84,7 +84,7 @@ export default function NewTask() {
                 <h4>Rounds:</h4>
                 {rounds.map((round, index) => (
                     <div key={index} className="add-round-container">
-                        <h4>Round {index + 1}:</h4>
+                        <h4 className="round-title">Round {index + 1}:</h4>
                         <div className="task-grid">
                             <h4>Round description:</h4>
                             <textarea

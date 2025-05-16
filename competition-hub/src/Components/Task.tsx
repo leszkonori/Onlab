@@ -70,109 +70,99 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
 
     return (
         <div className="task-container">
-            <div className="grid-wrapper">
-                <div className="task-grid">
-                    <h4>Task name:</h4>
-                    <div className="flex gap-1.5">
-                        {editing ? (
-                            <input type="text" value={titleValue} onChange={(e) => setTitleValue(e.target.value)} />
-                        ) : (
-                            <p>{title}</p>
-                        )}
-                    </div>
-                    <h4 className="flex justify-end">Description:</h4>
-                    <div className="flex items-center gap-1.5">
-                        {editing ? (
-                            <textarea value={descrValue} onChange={(e) => setDescrValue(e.target.value)} />
-                        ) : (
-                            <p>{descr}</p>
-                        )}
-                    </div>
-
-                    <h4 className="flex justify-end">Application deadline:</h4>
-                    <div className="flex gap-1.5">
-                        {editing ? (
-                            <input type="date" value={dateValue} onChange={(e) => setDateValue(e.target.value)} />
-                        ) : (
-                            <p>{date}</p>
-                        )}
-                    </div>
-
-                    {/* Fordulók */}
-                    {rounds && rounds.length > 0 && (
-                        <div className="mt-4">
-                            <h4 className="flex justify-end">Rounds:</h4>
-                            <div>
-                                {roundsValue.map((round, index) => (
-                                    <div key={index} className="round-container">
-                                        {editing ? (
-                                            <>
-                                                <input
-                                                    type="text"
-                                                    value={round.description}
-                                                    onChange={(e) =>
-                                                        handleRoundChange(index, 'description', e.target.value)
-                                                    }
-                                                />
-                                                <input
-                                                    type="datetime-local"
-                                                    value={round.deadline}
-                                                    onChange={(e) =>
-                                                        handleRoundChange(index, 'deadline', e.target.value)
-                                                    }
-                                                />
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p>Description: {round.description}</p>
-                                                <p>Deadline: {round.deadline}</p>
-                                            </>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {applications && applications.length > 0 && (
-                        <div className="mt-4">
-                            <h4 className="flex justify-end">Applications:</h4>
-                            <div>
-                                {applications.map((application, index) => (
-                                    <div key={index} className="application-container">
-                                        <p>File Path: {application.filePath}</p>
-                                        <p>Application Date: {new Date(application.applicationDate).toLocaleDateString()}</p>
-                                        <a
-                                            href={`http://localhost:8081/uploads/${application.filePath}`} // A filePath elérhetősége a szerveren
-                                            download
-                                            style={{color: "black"}}
-                                        >
-                                            Download
-                                        </a>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {editable && (
-                    <>
-                        {!editing && (
-                            <>
-                                <button onClick={() => setEditing((prev) => !prev)}>Edit</button>
-                                <button onClick={handleDelete}>Delete task</button>
-                            </>
-                        )}
-                        {editing && (
-                            <>
-                                <button onClick={handleSave}>Save</button>
-                                <button onClick={() => setEditing(false)}>Cancel</button>
-                            </>
-                        )}
-                    </>
+            <div className="task-grid">
+                <h4>Task name:</h4>
+                {editing ? (
+                    <input type="text" value={titleValue} onChange={(e) => setTitleValue(e.target.value)} />
+                ) : (
+                    <p>{title}</p>
+                )}
+                <h4>Description:</h4>
+                {editing ? (
+                    <textarea value={descrValue} onChange={(e) => setDescrValue(e.target.value)} />
+                ) : (
+                    <p>{descr}</p>
+                )}
+                <h4>Application deadline:</h4>
+                {editing ? (
+                    <input type="date" value={dateValue} onChange={(e) => setDateValue(e.target.value)} />
+                ) : (
+                    <p>{date}</p>
                 )}
             </div>
+            {rounds && rounds.length > 0 && (
+                <div className="rounds-container">
+                    <h4>Rounds:</h4>
+                    <div className="add-round-container">
+                        {roundsValue.map((round, index) => (
+                            <div key={index} className="round-container">
+                                <h4 className="round-title">Round {index + 1}:</h4>
+                                {editing ? (
+                                    <div className="task-grid edit">
+                                        <textarea
+                                            value={round.description}
+                                            onChange={(e) =>
+                                                handleRoundChange(index, 'description', e.target.value)
+                                            }
+                                        />
+                                        <input
+                                            type="datetime-local"
+                                            value={round.deadline}
+                                            onChange={(e) =>
+                                                handleRoundChange(index, 'deadline', e.target.value)
+                                            }
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="task-grid">
+                                        <h4>Description:</h4>
+                                        <p>{round.description}</p>
+                                        <h4>Deadline:</h4>
+                                        <p>{round.deadline}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {applications && applications.length > 0 && (
+                <div className="mt-4">
+                    <h4 className="flex justify-end">Applications:</h4>
+                    <div>
+                        {applications.map((application, index) => (
+                            <div key={index} className="application-container">
+                                <p>File Path: {application.filePath}</p>
+                                <p>Application Date: {new Date(application.applicationDate).toLocaleDateString()}</p>
+                                <a
+                                    href={`http://localhost:8081/uploads/${application.filePath}`} // A filePath elérhetősége a szerveren
+                                    download
+                                    style={{ color: "black" }}
+                                >
+                                    Download
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {editable && (
+                <>
+                    {!editing && (
+                        <>
+                            <button className="custom-button" onClick={() => setEditing((prev) => !prev)}>Edit</button>
+                            <button className="custom-button" onClick={handleDelete}>Delete task</button>
+                        </>
+                    )}
+                    {editing && (
+                        <>
+                            <button className="custom-button" onClick={handleSave}>Save</button>
+                            <button className="custom-button" onClick={() => setEditing(false)}>Cancel</button>
+                        </>
+                    )}
+                </>
+            )}
         </div>
     );
 }
