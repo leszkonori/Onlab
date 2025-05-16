@@ -102,24 +102,6 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         setApplicationStates(updated);
     };
 
-    const saveReview = async (appId: number, review: string | undefined) => {
-        try {
-            const res = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ review }),
-            });
-
-            if (!res.ok) throw new Error('Failed to save review');
-            alert('Review saved!');
-        } catch (error) {
-            console.error('Error saving review:', error);
-            alert('Could not save review');
-        }
-    };
-
     return (
         <div className="task-container">
             <div className="task-grid">
@@ -186,32 +168,36 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
             {editable && applicationStates.length > 0 && (
                 <div className="rounds-container">
                     <h4>Applications:</h4>
-                    <div className="add-round-container">
+                    <div className="add-round-container application">
                         {applicationStates.map((application, index) => (
-                            <div key={application.id} className="round-container">
+                            <div key={application.id} className="round-container application">
                                 <h4 className="round-title">Application {index + 1}:</h4>
                                 <div className="task-grid">
                                     <h4>Application Date:</h4>
                                     <p>{new Date(application.applicationDate).toLocaleDateString()}</p>
+                                    {editing ? (
+                                        <>
+                                            <h4>Review:</h4>
+                                            <textarea
+                                                value={application.review || ''}
+                                                onChange={(e) => handleReviewChange(application.id, e.target.value)}
+                                            />
+                                        </>
+
+                                    ) : (
+                                        <>
+                                            <h4>Review:</h4>
+                                            <p>{application.review ? application.review : "not reviewed"}</p>
+                                        </>
+
+                                    )}
                                 </div>
-                                <a
+                                <a className="download-button-a"
                                     href={`http://localhost:8081/api/applications/download/${application.id}`}
                                     download
-                                    style={{ color: "black" }}
                                 >
                                     <button className="custom-button">Download file</button>
                                 </a>
-                                {editing ? (
-                                    <>
-                                        <textarea
-                                            value={application.review || ''}
-                                            onChange={(e) => handleReviewChange(application.id, e.target.value)}
-                                        />
-                                        <button onClick={() => saveReview(application.id, application.review)}>Save Review</button>
-                                    </>
-                                ) : (
-                                    application.review && <p>Review: {application.review}</p>
-                                )}
                             </div>
                         ))}
                     </div>
