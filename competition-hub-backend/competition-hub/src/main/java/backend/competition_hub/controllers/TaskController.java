@@ -69,6 +69,14 @@ public class TaskController {
                         roundRepository.saveAll(updatedTask.getRounds()); // Mentjük a frissített roundokat
                     }
 
+                    if (updatedTask.getApplications() != null) {
+                        // Fontos: a task referenciát beállítjuk az alkalmazásokra is
+                        updatedTask.getApplications().forEach(app -> app.setTask(task));
+                        // Kiürítjük a régieket, majd hozzáadjuk az újak, így a review-k is frissülnek
+                        task.getApplications().clear();
+                        task.getApplications().addAll(updatedTask.getApplications());
+                    }
+
                     Task savedTask = taskRepository.save(task);
                     return ResponseEntity.ok(savedTask);
                 })

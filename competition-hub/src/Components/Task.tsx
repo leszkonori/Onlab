@@ -51,6 +51,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                     description: descrValue,
                     applicationDeadline: dateValue,
                     rounds: roundsValue,
+                    applications: applicationStates
                 }),
             });
 
@@ -95,7 +96,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
     }
 
     const handleReviewChange = (id: number, newReview: string) => {
-        const updated = applicationStates.map(app =>
+        const updated = applicationStates.map((app) =>
             app.id === id ? { ...app, review: newReview } : app
         );
         setApplicationStates(updated);
