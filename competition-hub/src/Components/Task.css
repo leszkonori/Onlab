@@ -95,6 +95,9 @@
     padding: 10px;
     width: fit-content;
 }
+.round-container.application.editing {
+    width: 100%;
+}
 
 .round-container.application {
     margin-bottom: 0px;

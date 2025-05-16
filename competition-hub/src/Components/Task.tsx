@@ -170,7 +170,8 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                     <h4>Applications:</h4>
                     <div className="add-round-container application">
                         {applicationStates.map((application, index) => (
-                            <div key={application.id} className="round-container application">
+                            <div key={application.id} className={`round-container application${editing ? " editing" : ""}`}
+>
                                 <h4 className="round-title">Application {index + 1}:</h4>
                                 <div className="task-grid">
                                     <h4>Application Date:</h4>
