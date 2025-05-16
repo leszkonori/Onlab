@@ -10,6 +10,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
     const [descrValue, setDescrValue] = useState(descr);
     const [dateValue, setDateValue] = useState(date);
     const [roundsValue, setRoundsValue] = useState(rounds || []);
+    const [applicationStates, setApplicationStates] = useState(applications || []);
 
 
     function formatDate(isoString: string | number | Date) {
@@ -93,6 +94,31 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         }
     }
 
+    const handleReviewChange = (id: number, newReview: string) => {
+        const updated = applicationStates.map(app =>
+            app.id === id ? { ...app, review: newReview } : app
+        );
+        setApplicationStates(updated);
+    };
+
+    const saveReview = async (appId: number, review: string | undefined) => {
+        try {
+            const res = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ review }),
+            });
+
+            if (!res.ok) throw new Error('Failed to save review');
+            alert('Review saved!');
+        } catch (error) {
+            console.error('Error saving review:', error);
+            alert('Could not save review');
+        }
+    };
+
     return (
         <div className="task-container">
             <div className="task-grid">
@@ -156,12 +182,12 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                 </div>
             )}
 
-            {editable && applications && applications.length > 0 && (
+            {editable && applicationStates.length > 0 && (
                 <div className="rounds-container">
                     <h4>Applications:</h4>
                     <div className="add-round-container">
-                        {applications.map((application, index) => (
-                            <div key={index} className="round-container">
+                        {applicationStates.map((application, index) => (
+                            <div key={application.id} className="round-container">
                                 <h4 className="round-title">Application {index + 1}:</h4>
                                 <div className="task-grid">
                                     <h4>Application Date:</h4>
@@ -174,6 +200,17 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                 >
                                     <button className="custom-button">Download file</button>
                                 </a>
+                                {editing ? (
+                                    <>
+                                        <textarea
+                                            value={application.review || ''}
+                                            onChange={(e) => handleReviewChange(application.id, e.target.value)}
+                                        />
+                                        <button onClick={() => saveReview(application.id, application.review)}>Save Review</button>
+                                    </>
+                                ) : (
+                                    application.review && <p>Review: {application.review}</p>
+                                )}
                             </div>
                         ))}
                     </div>

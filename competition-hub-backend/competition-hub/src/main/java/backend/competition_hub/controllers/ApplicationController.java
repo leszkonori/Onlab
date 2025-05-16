@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Date;
+import java.util.Map;
 
 
 @RestController
@@ -106,5 +107,14 @@ public class ApplicationController {
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+    }
+
+    @PutMapping("/{id}/review")
+    public ResponseEntity<Application> updateReview(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return applicationRepository.findById(id).map(app -> {
+            app.setReview(body.get("review"));
+            applicationRepository.save(app);
+            return ResponseEntity.ok(app);
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

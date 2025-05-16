@@ -25,6 +25,7 @@ public class Application {
 
     private String filePath;
     private Date applicationDate;
+    private String review;
 
     public Application() {}
 
