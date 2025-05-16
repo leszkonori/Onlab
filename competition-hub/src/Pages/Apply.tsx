@@ -42,13 +42,16 @@ export default function Apply() {
             });
 
             if (res.ok) {
-                setMessage("Fájl sikeresen feltöltve!");
+                setMessage("File uploaded successfully!");
+                alert("File uploaded successfully!");
             } else {
                 const errText = await res.text();
-                setMessage("Hiba: " + errText);
+                setMessage("Error: " + errText);
+                alert("Error: " + errText);
             }
         } catch (error) {
-            setMessage("Hiba a feltöltés során.");
+            setMessage("Error occured during file upload");
+            alert("Error occured during file upload");
         }
     };
 
@@ -61,6 +64,7 @@ export default function Apply() {
                 <button className="custom-button">
                     <Link to="/profile">Profile</Link>
                 </button>
+                <button className="custom-button" onClick={logout}>Logout</button>
             </div>
             <div className="page-title-container">
                 <h2 className="page-title">{task?.title}</h2>
@@ -77,13 +81,13 @@ export default function Apply() {
             {task?.creator !== user?.username && (<>
                 <div className="upload-section">
                     <h4>Upload a file:</h4>
-                    <button>
+                    <button className="custom-button">
                         <label htmlFor="fileInput">Choose a file...</label>
                         <input type="file" id="fileInput" accept=".zip" style={{ display: 'none' }} onChange={handleFileChange} />
                     </button>
                     <h4>(Expected file format: .zip)</h4>
                 </div>
-                <button className="apply-button" onClick={handleApply}>Apply</button>
+                <button className="custom-button" onClick={handleApply}>Apply</button>
             </>
             )}
         </div>

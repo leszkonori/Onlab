@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import button from "../Components/button";
 import PageTitle from "../Components/PageTitle";
 import { useKeycloak } from "../KeycloakProvider";
 import '../styles/Profile.css';
 import { useEffect, useState } from "react";
 import { ApplicationType, TaskType } from "../types";
+import ListCard from "../Components/ListCard";
 
 export default function Profile() {
     const { user, isAuthenticated, hasRole, logout } = useKeycloak();
@@ -31,40 +31,44 @@ export default function Profile() {
     }, [isAuthenticated, user?.username]);
 
     return (
-        <>
-            <div className="flex justify-between">
-                <div>
-                    <button>
-                        <Link to="/">Főoldal</Link>
-                    </button>
-                </div>
-                <div>
-                    <button>
-                        <Link to="/active-tasks">Aktív feladatkiírások</Link>
-                    </button>
+        <div className="page-container">
+            <div className="menu-container">
+                <button className="custom-button">
+                    <Link to="/">Main Page</Link>
+                </button>
+                <button className="custom-button">
+                    <Link to="/profile">Profile</Link>
+                </button>
+                <button className="custom-button" onClick={logout}>Logout</button>
+            </div>
+            <div className="page-title-container">
+                <h2 className="page-title">Profile</h2>
+            </div>
+            <div className="profile-container">
+                <div className="profile-grid-wrapper">
+                    <div className="profile-grid">
+                        <h4>Username:</h4>
+                        <p>{user?.username}</p>
+                        <h4>Tasks you applied for:</h4>
+                        <ul>
+                            {appliedTasks.map(task => (
+                                <li key={task.id}>
+                                    <Link to={`/task/${task.id}`}>{task.title}</Link>
+                                </li>
+                            ))}
+                        </ul>
+                        <h4>Your tasks:</h4>
+                        <ul className="my-tasks-list">
+                            {tasks.filter(t => t.creator === user?.username).map(t => (
+                                <li key={t.id}>
+                                    <ListCard title={t.title} descr="" link={`/apply/${t.id}`}/>
+                                </li>
+                            ))}
+                            
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <PageTitle>Your profile</PageTitle>
-            <div className="profile-content">
-                <h4 className="flex justify-end">Username:</h4>
-                <p>{user?.username}</p>
-                <h4 className="flex justify-end">Tasks you applied for:</h4>
-                <ul>
-                    {appliedTasks.map(task => (
-                        <li key={task.id}>
-                            <Link to={`/task/${task.id}`}>{task.title}</Link>
-                        </li>
-                    ))}
-                </ul>
-                <h4 className="flex justify-end">Your tasks:</h4>
-                <ul>
-                    {tasks.filter(t => t.creator === user?.username).map(t => (
-                        <li key={t.id}>
-                            <Link to={`/apply/${t.id}`}>{t.title}</Link>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </>
+        </div>
     );
 }

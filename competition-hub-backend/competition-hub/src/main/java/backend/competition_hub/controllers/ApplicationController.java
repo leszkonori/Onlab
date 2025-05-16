@@ -81,4 +81,30 @@ public class ApplicationController {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
         }
     }
+
+    @GetMapping("/download/{applicationId}")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long applicationId) {
+        Application application = applicationRepository.findById(applicationId).orElse(null);
+        if (application == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Path filePath = Paths.get(application.getFilePath());
+        if (!Files.exists(filePath)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        try {
+            byte[] fileBytes = Files.readAllBytes(filePath);
+            String fileName = filePath.getFileName().toString();
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .header("Content-Type", "application/octet-stream")
+                    .body(fileBytes);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

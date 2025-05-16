@@ -1,20 +1,44 @@
-.profile-content {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    justify-self: center;
-    width: 500px;
-    gap: 10px;
+.profile-container {
+    background-color: white;
     padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    width: 100%;
+    margin: 20px auto;
+}
 
-    h4 {
-        font-size: 1rem;
-        font-weight: bold;
-        color: #333;
-    }
+.profile-container h4 {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--dark-blue);
+}
 
-    a{
-        color: black;
+.profile-container p {
+    align-self: center;
+}
+
+.profile-grid-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.profile-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    >h4 {
+        display: flex;
+        justify-content: flex-end;
     }
+}
+
+.my-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }

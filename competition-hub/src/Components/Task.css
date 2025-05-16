@@ -71,3 +71,10 @@
 .task-grid.edit{
     grid-template-columns: minmax(0px, 500px) auto;
 }
+
+.buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+}

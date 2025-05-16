@@ -11,6 +11,31 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
     const [dateValue, setDateValue] = useState(date);
     const [roundsValue, setRoundsValue] = useState(rounds || []);
 
+
+    function formatDate(isoString: string | number | Date) {
+        const date = new Date(isoString);
+
+        return new Intl.DateTimeFormat('hu-HU', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(date);
+    }
+
+    function getNextUpcomingDeadline(rounds: RoundType[]): string | null {
+        const now = new Date();
+
+        const upcoming = rounds
+            .map(round => ({ ...round, parsedDate: new Date(round.deadline) }))
+            .filter(round => round.parsedDate > now)
+            .sort((a, b) => a.parsedDate.getTime() - b.parsedDate.getTime());
+
+        return upcoming.length > 0 ? upcoming[0].deadline : null;
+    }
+
+
     const navigate = useNavigate();
 
     async function handleSave() {
@@ -83,11 +108,15 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                 ) : (
                     <p>{descr}</p>
                 )}
-                <h4>Application deadline:</h4>
+                <h4>{!rounds || rounds.length == 0 ? "Deadline:" : "Current round deadline:"}</h4>
                 {editing ? (
                     <input type="date" value={dateValue} onChange={(e) => setDateValue(e.target.value)} />
                 ) : (
-                    <p>{date}</p>
+                    <p>
+                        {getNextUpcomingDeadline(roundsValue)
+                            ? formatDate(getNextUpcomingDeadline(roundsValue)!)
+                            : date}
+                    </p>
                 )}
             </div>
             {rounds && rounds.length > 0 && (
@@ -118,7 +147,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                         <h4>Description:</h4>
                                         <p>{round.description}</p>
                                         <h4>Deadline:</h4>
-                                        <p>{round.deadline}</p>
+                                        <p>{formatDate(round.deadline)}</p>
                                     </div>
                                 )}
                             </div>
@@ -127,39 +156,43 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                 </div>
             )}
 
-            {applications && applications.length > 0 && (
-                <div className="mt-4">
-                    <h4 className="flex justify-end">Applications:</h4>
-                    <div>
+            {editable && applications && applications.length > 0 && (
+                <div className="rounds-container">
+                    <h4>Applications:</h4>
+                    <div className="add-round-container">
                         {applications.map((application, index) => (
-                            <div key={index} className="application-container">
-                                <p>File Path: {application.filePath}</p>
-                                <p>Application Date: {new Date(application.applicationDate).toLocaleDateString()}</p>
+                            <div key={index} className="round-container">
+                                <h4 className="round-title">Application {index + 1}:</h4>
+                                <div className="task-grid">
+                                    <h4>Application Date:</h4>
+                                    <p>{new Date(application.applicationDate).toLocaleDateString()}</p>
+                                </div>
                                 <a
-                                    href={`http://localhost:8081/uploads/${application.filePath}`} // A filePath elérhetősége a szerveren
+                                    href={`http://localhost:8081/api/applications/download/${application.id}`}
                                     download
                                     style={{ color: "black" }}
                                 >
-                                    Download
+                                    <button className="custom-button">Download file</button>
                                 </a>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
+
             {editable && (
                 <>
                     {!editing && (
-                        <>
+                        <div className="buttons-container">
                             <button className="custom-button" onClick={() => setEditing((prev) => !prev)}>Edit</button>
                             <button className="custom-button" onClick={handleDelete}>Delete task</button>
-                        </>
+                        </div>
                     )}
                     {editing && (
-                        <>
+                        <div className="buttons-container">
                             <button className="custom-button" onClick={handleSave}>Save</button>
                             <button className="custom-button" onClick={() => setEditing(false)}>Cancel</button>
-                        </>
+                        </div>
                     )}
                 </>
             )}

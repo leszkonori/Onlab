@@ -19,24 +19,10 @@
 
 .upload-section {
     margin-top: 20px;
+    margin-bottom: 12px;
     text-align: center;
 }
 
-.upload-section button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+.custom-button label:hover {
     cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s;
-}
-
-.upload-section button:hover {
-    background-color: #0056b3;
-}
-
-.apply-button {
-    margin-top: 20px;
 }
