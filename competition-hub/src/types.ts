@@ -15,6 +15,7 @@ export type TaskType = {
 };
 
 export type User = {
+    id: string;
     username: string;
     email?: string;
     name?: string;
@@ -24,7 +25,7 @@ export type User = {
 export type ApplicationType = {
     id: number;
     task: TaskType;
-    user: any;
+    keycloakUserId: string;
     filePath: string;
     applicationDate: string;
     review?: string;

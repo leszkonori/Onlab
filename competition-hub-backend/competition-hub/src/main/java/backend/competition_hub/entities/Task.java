@@ -1,6 +1,8 @@
 package backend.competition_hub.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +10,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
 public class Task {
 
@@ -46,7 +49,7 @@ public class Task {
     @Setter
     @Getter
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "task-application")
+    //@JsonManagedReference(value = "task-application")
     private List<Application> applications;
 
 

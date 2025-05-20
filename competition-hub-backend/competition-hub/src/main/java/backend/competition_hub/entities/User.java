@@ -15,9 +15,6 @@ public class User {
     private String username;
     private String email;
 
-    @OneToMany(mappedBy = "user")
-    private List<Application> applications;
-
     public User() {}
 
     public User(String username, String email) {

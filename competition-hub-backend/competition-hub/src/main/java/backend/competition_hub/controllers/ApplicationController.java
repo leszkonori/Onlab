@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 
@@ -38,7 +39,8 @@ public class ApplicationController {
 
     @PostMapping("/{taskId}")
     public ResponseEntity<String> handleFileUpload(@PathVariable Long taskId,
-                                                   @RequestParam("file") MultipartFile file) {
+                                                   @RequestParam("file") MultipartFile file,
+                                                   @RequestParam("keycloakUserId") String keycloakUserId) {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
@@ -54,13 +56,6 @@ public class ApplicationController {
             Path filePath = uploadPath.resolve(file.getOriginalFilename());
             file.transferTo(filePath.toFile());
 
-            // Felhasználó lekérése a Principalból
-//            String username = principal.getName();
-//            User user = userRepository.findByUsername(username);
-//            if (user == null) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
-//            }
-
             // Feladat lekérése az ID alapján
             Task task = taskRepository.findById(taskId).orElse(null);
             if (task == null) {
@@ -70,8 +65,7 @@ public class ApplicationController {
             // Application entitás létrehozása és mentése
             Application application = new Application();
             application.setTask(task);
-            //application.setUser(user);
-            application.setUser(null);
+            application.setKeycloakUserId(keycloakUserId);
             application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
             application.setApplicationDate(new Date());
             applicationRepository.save(application);
@@ -116,5 +110,11 @@ public class ApplicationController {
             applicationRepository.save(app);
             return ResponseEntity.ok(app);
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/by-user/{keycloakUserId}")
+    public ResponseEntity<List<Application>> getApplicationsByUser(@PathVariable String keycloakUserId) {
+        List<Application> apps = applicationRepository.findByKeycloakUserId(keycloakUserId);
+        return ResponseEntity.ok(apps);
     }
 }

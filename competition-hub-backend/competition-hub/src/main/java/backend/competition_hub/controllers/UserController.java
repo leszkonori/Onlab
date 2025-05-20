@@ -31,13 +31,13 @@ public class UserController {
         return userRepository.findAll();
     }
 
-    @GetMapping("/applications/{username}")
-    public ResponseEntity<List<Application>> getUserApplicationsByUsername(@PathVariable String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-        List<Application> applications = applicationRepository.findByUserId(user.getId());
-        return ResponseEntity.ok(applications);
-    }
+//    @GetMapping("/applications/{username}")
+//    public ResponseEntity<List<Application>> getUserApplicationsByUsername(@PathVariable String username) {
+//        User user = userRepository.findByUsername(username);
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//        }
+//        List<Application> applications = applicationRepository.findByKeycloakUserId(user.getId());
+//        return ResponseEntity.ok(applications);
+//    }
 }

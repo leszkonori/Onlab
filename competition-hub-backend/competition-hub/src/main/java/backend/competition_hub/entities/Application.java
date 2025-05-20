@@ -1,11 +1,14 @@
 package backend.competition_hub.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Data
 @Entity
 public class Application {
@@ -14,14 +17,12 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "task_id", nullable = false)
-    @JsonBackReference(value = "task-application")
-    private Task task;
+    private String keycloakUserId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true)
-    private User user;
+    @JoinColumn(name = "task_id", nullable = false)
+    //@JsonBackReference(value = "task-application")
+    private Task task;
 
     private String filePath;
     private Date applicationDate;
@@ -29,9 +30,9 @@ public class Application {
 
     public Application() {}
 
-    public Application(Task task, User user, String filePath, Date applicationDate) {
+    public Application(Task task, String keycloakUserId, String filePath, Date applicationDate) {
         this.task = task;
-        this.user = user;
+        this.keycloakUserId = keycloakUserId;
         this.filePath = filePath;
         this.applicationDate = applicationDate;
     }

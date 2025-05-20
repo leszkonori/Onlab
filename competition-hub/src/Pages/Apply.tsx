@@ -30,10 +30,11 @@ export default function Apply() {
     };
 
     const handleApply = async () => {
-        if (!file || !id) return;
+        if (!file || !id || !user) return;
 
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("keycloakUserId", user.id);
 
         try {
             const res = await fetch(`http://localhost:8081/api/applications/${id}`, {
@@ -78,7 +79,25 @@ export default function Apply() {
                 applications={task.applications}
                 editable={user?.username === task.creator}
             />}
-            {task?.creator !== user?.username && (<>
+            {task?.applications?.some(app => app.keycloakUserId === user?.id) && (
+                <>
+                    <p>You have already applied for this task.</p>
+                    <a className="download-button-a"
+                        href={`http://localhost:8081/api/applications/download/${task?.applications?.find(app => app.keycloakUserId === user?.id)?.id}`}
+                        download
+                    >
+                        <button className="custom-button">Download file</button>
+                    </a>
+                    {task?.applications?.find(app => app.keycloakUserId === user?.id)?.review && (
+                        <>
+                            <h4>Review:</h4>
+                            <p>{task?.applications?.find(app => app.keycloakUserId === user?.id)?.review}</p>
+                        </>
+                    )}
+                </>
+
+            )}
+            {task?.creator !== user?.username && !!!task?.applications?.some(app => app.keycloakUserId === user?.id) && (<>
                 <div className="upload-section">
                     <h4>Upload a file:</h4>
                     <button className="custom-button">

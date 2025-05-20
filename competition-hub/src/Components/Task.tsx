@@ -41,6 +41,8 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
 
     async function handleSave() {
         try {
+            const cleanedApplications = applicationStates.map(({ task, ...rest }) => rest);
+
             const response = await fetch(`http://localhost:8081/api/tasks/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -51,7 +53,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                     description: descrValue,
                     applicationDeadline: dateValue,
                     rounds: roundsValue,
-                    applications: applicationStates
+                    applications: cleanedApplications
                 }),
             });
 

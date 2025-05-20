@@ -18,17 +18,26 @@ export default function Profile() {
             .then((data) => setTasks(data))
             .catch((err) => console.error("Error loading the tasks:", err));
 
+    }, [isAuthenticated, user?.username]);
 
-        fetch(`http://localhost:8081/api/users/applications/${user?.username}`)
-            .then((res) => res.json())
+    useEffect(() => {
+        if (!user?.id) return;
+
+        fetch(`http://localhost:8081/api/applications/by-user/${user.id}`)
+            .then((res) => {
+                if (!res.ok) throw new Error("Failed to fetch applications");
+                return res.json();
+            })
             .then((data: ApplicationType[]) => {
-                // Kivesszük a Task objektumokat a Application listából
-                const appliedTasksData = data.map(application => application.task);
+                // Az Application objektum task mezőjét kivesszük
+                const appliedTasksData = data
+                    .filter(app => app.task !== undefined && app.task !== null)
+                    .map(app => app.task);
                 setAppliedTasks(appliedTasksData);
+                console.log(appliedTasks);
             })
             .catch((err) => console.error("Error loading applied tasks:", err));
-
-    }, [isAuthenticated, user?.username]);
+    }, [user?.id]);
 
     return (
         <div className="page-container">
@@ -50,10 +59,10 @@ export default function Profile() {
                         <h4>Username:</h4>
                         <p>{user?.username}</p>
                         <h4>Tasks you applied for:</h4>
-                        <ul>
+                        <ul className="my-task-list">
                             {appliedTasks.map(task => (
                                 <li key={task.id}>
-                                    <Link to={`/task/${task.id}`}>{task.title}</Link>
+                                    <ListCard title={task.title} descr="" link={`/apply/${task.id}`} />
                                 </li>
                             ))}
                         </ul>
@@ -61,10 +70,10 @@ export default function Profile() {
                         <ul className="my-tasks-list">
                             {tasks.filter(t => t.creator === user?.username).map(t => (
                                 <li key={t.id}>
-                                    <ListCard title={t.title} descr="" link={`/apply/${t.id}`}/>
+                                    <ListCard title={t.title} descr="" link={`/apply/${t.id}`} />
                                 </li>
                             ))}
-                            
+
                         </ul>
                     </div>
                 </div>
