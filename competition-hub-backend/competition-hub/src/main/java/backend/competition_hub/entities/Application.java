@@ -19,6 +19,7 @@ public class Application {
     private Long id;
 
     private String keycloakUserId;
+    private String keycloakUserName;
 
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
@@ -35,9 +36,10 @@ public class Application {
 
     public Application() {}
 
-    public Application(Task task, String keycloakUserId, String filePath, Date applicationDate) {
+    public Application(Task task, String keycloakUserId, String keycloakUserName, String filePath, Date applicationDate) {
         this.task = task;
         this.keycloakUserId = keycloakUserId;
+        this.keycloakUserName = keycloakUserName;
         this.filePath = filePath;
         this.applicationDate = applicationDate;
     }

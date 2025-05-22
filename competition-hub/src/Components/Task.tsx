@@ -28,6 +28,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         const formData = new FormData();
         formData.append("file", file);
         formData.append("keycloakUserId", user.id);
+        formData.append("keycloakUserName", user.username);
 
         try {
             const response = await fetch(`http://localhost:8081/api/applications/${id}/round/${roundId}`, {
@@ -204,7 +205,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                         <p>{round.description}</p>
                                         <h4>Deadline:</h4>
                                         <p>{formatDate(round.deadline)}</p>
-                                        <div className="upload-section">
+                                        {!editable && <div className="upload-section">
                                             <input
                                                 type="file"
                                                 onChange={(e) =>
@@ -217,7 +218,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                             >
                                                 Upload file to this round
                                             </button>
-                                        </div>
+                                        </div>}
                                     </div>
                                 )}
                             </div>
@@ -239,6 +240,8 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                     <p>
                                         Round {roundsValue.findIndex(r => r.id === application.round?.id) + 1}
                                     </p>
+                                    <h4>Uploader:</h4>
+                                    <p>{application.keycloakUserName}</p>
                                     <h4>Application Date:</h4>
                                     <p>{new Date(application.applicationDate).toLocaleDateString()}</p>
                                     {editing ? (

@@ -28,6 +28,7 @@ export type ApplicationType = {
     id: number;
     task: TaskType;
     keycloakUserId: string;
+    keycloakUserName: string;
     filePath: string;
     applicationDate: string;
     review?: string;

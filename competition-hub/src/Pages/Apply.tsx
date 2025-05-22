@@ -51,6 +51,7 @@ export default function Apply() {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("keycloakUserId", user.id);
+        formData.append("keycloakUserName", user.username);
 
         try {
             const res = await fetch(`http://localhost:8081/api/applications/${id}`, {

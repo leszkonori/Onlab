@@ -36,7 +36,8 @@ public class ApplicationController {
     @PostMapping("/{taskId}")
     public ResponseEntity<String> handleFileUpload(@PathVariable Long taskId,
                                                    @RequestParam("file") MultipartFile file,
-                                                   @RequestParam("keycloakUserId") String keycloakUserId) {
+                                                   @RequestParam("keycloakUserId") String keycloakUserId,
+                                                   @RequestParam("keycloakUserName") String keycloakUserName) {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
@@ -62,6 +63,7 @@ public class ApplicationController {
             Application application = new Application();
             application.setTask(task);
             application.setKeycloakUserId(keycloakUserId);
+            application.setKeycloakUserName(keycloakUserName);
             application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
             application.setApplicationDate(new Date());
             applicationRepository.save(application);
@@ -77,7 +79,8 @@ public class ApplicationController {
     public ResponseEntity<String> handleFileUploadForRound(@PathVariable Long taskId,
                                                            @PathVariable Long roundId,
                                                            @RequestParam("file") MultipartFile file,
-                                                           @RequestParam("keycloakUserId") String keycloakUserId) {
+                                                           @RequestParam("keycloakUserId") String keycloakUserId,
+                                                           @RequestParam("keycloakUserName") String keycloakUserName) {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
@@ -114,6 +117,7 @@ public class ApplicationController {
             application.setRound(round);
             application.setTask(round.getTask());
             application.setKeycloakUserId(keycloakUserId);
+            application.setKeycloakUserName(keycloakUserName);
             application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
             application.setApplicationDate(new Date());
             applicationRepository.save(application);
