@@ -2,10 +2,8 @@ package backend.competition_hub.controllers;
 
 import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Task;
-import backend.competition_hub.entities.User;
 import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.TaskRepository;
-import backend.competition_hub.repositories.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +26,10 @@ public class ApplicationController {
 
     private final ApplicationRepository applicationRepository;
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
 
-    public ApplicationController(ApplicationRepository applicationRepository, TaskRepository taskRepository, UserRepository userRepository) {
+    public ApplicationController(ApplicationRepository applicationRepository, TaskRepository taskRepository) {
         this.applicationRepository = applicationRepository;
         this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
     }
 
     @PostMapping("/{taskId}")
