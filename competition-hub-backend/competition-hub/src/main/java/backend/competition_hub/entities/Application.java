@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -31,12 +32,12 @@ public class Application {
     private Round round;
 
     private String filePath;
-    private Date applicationDate;
+    private LocalDateTime applicationDate;
     private String review;
 
     public Application() {}
 
-    public Application(Task task, String keycloakUserId, String keycloakUserName, String filePath, Date applicationDate) {
+    public Application(Task task, String keycloakUserId, String keycloakUserName, String filePath, LocalDateTime applicationDate) {
         this.task = task;
         this.keycloakUserId = keycloakUserId;
         this.keycloakUserName = keycloakUserName;

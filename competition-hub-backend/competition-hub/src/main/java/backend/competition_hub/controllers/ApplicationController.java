@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class ApplicationController {
             application.setKeycloakUserId(keycloakUserId);
             application.setKeycloakUserName(keycloakUserName);
             application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
-            application.setApplicationDate(new Date());
+            application.setApplicationDate(LocalDateTime.now());
             applicationRepository.save(application);
 
             return ResponseEntity.ok("File uploaded and application submitted successfully.");
@@ -119,7 +120,7 @@ public class ApplicationController {
             application.setKeycloakUserId(keycloakUserId);
             application.setKeycloakUserName(keycloakUserName);
             application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
-            application.setApplicationDate(new Date());
+            application.setApplicationDate(LocalDateTime.now());
             applicationRepository.save(application);
 
             return ResponseEntity.ok("File uploaded and application submitted successfully.");

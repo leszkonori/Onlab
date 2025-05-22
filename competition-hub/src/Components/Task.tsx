@@ -251,7 +251,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                     <h4>Uploader:</h4>
                                     <p>{application.keycloakUserName}</p>
                                     <h4>Application Date:</h4>
-                                    <p>{new Date(application.applicationDate).toLocaleDateString()}</p>
+                                    <p>{formatDate(application.applicationDate)}</p>
                                     {editing ? (
                                         <>
                                             <h4>Review:</h4>
