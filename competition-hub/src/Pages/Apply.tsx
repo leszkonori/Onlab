@@ -96,7 +96,7 @@ export default function Apply() {
                 applications={task.applications}
                 editable={user?.username === task.creator}
             />}
-            {task?.applications?.some(app => app.keycloakUserId === user?.id) && (
+            {task?.applications?.some(app => app.keycloakUserId === user?.id) && (!task?.rounds || task.rounds.length === 0) && (
                 <>
                     <p>You have already applied for this task.</p>
                     <a className="download-button-a"

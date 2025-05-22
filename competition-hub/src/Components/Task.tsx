@@ -71,6 +71,12 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
 
     const navigate = useNavigate();
 
+    const now = new Date();
+    const upcomingRounds = roundsValue
+        .filter(r => new Date(r.deadline) > now)
+        .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+    const activeRound = upcomingRounds.length > 0 ? upcomingRounds[0] : null;
+
     async function handleSave() {
         try {
             const cleanedApplications = applicationStates.map(({ task, ...rest }) => rest);
@@ -200,12 +206,14 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                         />
                                     </div>
                                 ) : (
-                                    <div className="task-grid">
-                                        <h4>Description:</h4>
-                                        <p>{round.description}</p>
-                                        <h4>Deadline:</h4>
-                                        <p>{formatDate(round.deadline)}</p>
-                                        {!editable && <div className="upload-section">
+                                    <>
+                                        <div className="task-grid">
+                                            <h4>Description:</h4>
+                                            <p>{round.description}</p>
+                                            <h4>Deadline:</h4>
+                                            <p>{formatDate(round.deadline)}</p>
+                                        </div>
+                                        {!editable && activeRound && round.id === activeRound.id && <div className="upload-section">
                                             <input
                                                 type="file"
                                                 onChange={(e) =>
@@ -219,7 +227,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                                 Upload file to this round
                                             </button>
                                         </div>}
-                                    </div>
+                                    </>
                                 )}
                             </div>
                         ))}
