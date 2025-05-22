@@ -44,7 +44,6 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         }
     }
 
-
     function formatDate(isoString: string | number | Date) {
         const date = new Date(isoString);
 
@@ -79,7 +78,6 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
 
     async function handleSave() {
         try {
-            const cleanedApplications = applicationStates.map(({ task, ...rest }) => rest);
             const cleanedRounds = roundsValue.map(({ applications, ...rest }) => rest);
 
             const response = await fetch(`http://localhost:8081/api/tasks/${id}`, {
@@ -92,8 +90,6 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                     description: descrValue,
                     applicationDeadline: dateValue,
                     rounds: cleanedRounds
-                    //rounds: roundsValue,
-                    //applications: cleanedApplications
                 }),
             });
 
@@ -156,6 +152,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         setApplicationStates(updated);
     };
 
+
     return (
         <div className="task-container">
             <div className="task-grid">
@@ -186,51 +183,76 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                 <div className="rounds-container">
                     <h4>Rounds:</h4>
                     <div className="add-round-container">
-                        {roundsValue.map((round, index) => (
-                            <div key={index} className="round-container">
-                                <h4 className="round-title">Round {index + 1}:</h4>
-                                {editing ? (
-                                    <div className="task-grid edit">
-                                        <textarea
-                                            value={round.description}
-                                            onChange={(e) =>
-                                                handleRoundChange(index, 'description', e.target.value)
-                                            }
-                                        />
-                                        <input
-                                            type="datetime-local"
-                                            value={round.deadline}
-                                            onChange={(e) =>
-                                                handleRoundChange(index, 'deadline', e.target.value)
-                                            }
-                                        />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="task-grid">
-                                            <h4>Description:</h4>
-                                            <p>{round.description}</p>
-                                            <h4>Deadline:</h4>
-                                            <p>{formatDate(round.deadline)}</p>
-                                        </div>
-                                        {!editable && activeRound && round.id === activeRound.id && <div className="upload-section">
-                                            <input
-                                                type="file"
+                        {roundsValue.map((round, index) => {
+                            const hasAppliedToThisRound = applicationStates.some(
+                                app => app.keycloakUserId === user?.id && app.round?.id === round.id
+                            );
+
+                            return (
+                                <div key={index} className="round-container">
+                                    <h4 className="round-title">Round {index + 1}:</h4>
+                                    {editing ? (
+                                        <div className="task-grid edit">
+                                            <textarea
+                                                value={round.description}
                                                 onChange={(e) =>
-                                                    setSelectedFiles(prev => ({ ...prev, [round.id]: e.target.files?.[0] || null }))
+                                                    handleRoundChange(index, 'description', e.target.value)
                                                 }
                                             />
-                                            <button
-                                                className="custom-button"
-                                                onClick={() => uploadToRound(round.id)}
-                                            >
-                                                Upload file to this round
-                                            </button>
-                                        </div>}
-                                    </>
-                                )}
-                            </div>
-                        ))}
+                                            <input
+                                                type="datetime-local"
+                                                value={round.deadline}
+                                                onChange={(e) =>
+                                                    handleRoundChange(index, 'deadline', e.target.value)
+                                                }
+                                            />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="task-grid">
+                                                <h4>Description:</h4>
+                                                <p>{round.description}</p>
+                                                <h4>Deadline:</h4>
+                                                <p>{formatDate(round.deadline)}</p>
+                                            </div>
+                                            {!editable &&
+                                                activeRound &&
+                                                round.id === activeRound.id &&
+                                                !hasAppliedToThisRound && (
+                                                    <div className="upload-section">
+                                                        <label htmlFor={`fileInput-${round.id}`} className="custom-button">
+                                                            Choose a file...
+                                                            <input
+                                                                type="file"
+                                                                id={`fileInput-${round.id}`}
+                                                                accept=".zip"
+                                                                style={{ display: 'none' }}
+                                                                onChange={(e) =>
+                                                                    setSelectedFiles(prev => ({
+                                                                        ...prev,
+                                                                        [round.id]: e.target.files?.[0] || null
+                                                                    }))
+                                                                }
+                                                            />
+                                                        </label>
+                                                        <button
+                                                            className="custom-button"
+                                                            onClick={() => uploadToRound(round.id)}
+                                                        >
+                                                            Apply
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {
+                                                    hasAppliedToThisRound && (
+                                                        <h4>You have already applied for this round.</h4>
+                                                    )
+                                                }
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

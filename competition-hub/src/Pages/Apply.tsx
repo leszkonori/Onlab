@@ -33,7 +33,6 @@ export default function Apply() {
 
                 const combinedApplications = Array.from(uniqueMap.values());
 
-                // Összeállított Task, kibővített applications-szel
                 setTask({ ...data, applications: combinedApplications });
             })
             .catch((err) => console.error("Error: ", err));
@@ -114,17 +113,18 @@ export default function Apply() {
                 </>
 
             )}
-            {task?.creator !== user?.username && !!!task?.applications?.some(app => app.keycloakUserId === user?.id) && (<>
-                <div className="upload-section">
-                    <h4>Upload a file:</h4>
-                    <button className="custom-button">
-                        <label htmlFor="fileInput">Choose a file...</label>
-                        <input type="file" id="fileInput" accept=".zip" style={{ display: 'none' }} onChange={handleFileChange} />
-                    </button>
-                    <h4>(Expected file format: .zip)</h4>
-                </div>
-                <button className="custom-button" onClick={handleApply}>Apply</button>
-            </>
+            {task?.creator !== user?.username && !!!task?.applications?.some(app => app.keycloakUserId === user?.id) && task?.rounds?.length == 0 && (
+                <>
+                    <div className="upload-section">
+                        <h4>Upload a file:</h4>
+                        <button className="custom-button">
+                            <label htmlFor="fileInput">Choose a file...</label>
+                            <input type="file" id="fileInput" accept=".zip" style={{ display: 'none' }} onChange={handleFileChange} />
+                        </button>
+                        <h4>(Expected file format: .zip)</h4>
+                    </div>
+                    <button className="custom-button" onClick={handleApply}>Apply</button>
+                </>
             )}
         </div>
     );
