@@ -235,6 +235,10 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                             >
                                 <h4 className="round-title">Application {index + 1}:</h4>
                                 <div className="task-grid">
+                                    <h4>Round:</h4>
+                                    <p>
+                                        Round {roundsValue.findIndex(r => r.id === application.round?.id) + 1}
+                                    </p>
                                     <h4>Application Date:</h4>
                                     <p>{new Date(application.applicationDate).toLocaleDateString()}</p>
                                     {editing ? (
