@@ -29,12 +29,18 @@ export default function Profile() {
                 return res.json();
             })
             .then((data: ApplicationType[]) => {
-                // Az Application objektum task mezőjét kivesszük
-                const appliedTasksData = data
-                    .filter(app => app.task !== undefined && app.task !== null)
-                    .map(app => app.task);
-                setAppliedTasks(appliedTasksData);
-                console.log(appliedTasks);
+                const taskMap = new Map<number, TaskType>();
+
+                data.forEach(app => {
+                    if (app.task) {
+                        taskMap.set(app.task.id, app.task);
+                    } else if (app.round && app.round.task) {
+                        taskMap.set(app.round.task.id, app.round.task);
+                    }
+                });
+
+                const uniqueTasks = Array.from(taskMap.values());
+                setAppliedTasks(uniqueTasks);
             })
             .catch((err) => console.error("Error loading applied tasks:", err));
     }, [user?.id]);

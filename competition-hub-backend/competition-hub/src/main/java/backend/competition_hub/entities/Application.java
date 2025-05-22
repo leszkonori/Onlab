@@ -2,6 +2,7 @@ package backend.competition_hub.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -21,8 +22,12 @@ public class Application {
 
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
-    //@JsonBackReference(value = "task-application")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Task task;
+
+    @ManyToOne
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Round round;
 
     private String filePath;
     private Date applicationDate;

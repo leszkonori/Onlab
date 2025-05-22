@@ -1,7 +1,9 @@
 export type RoundType = {
-    id?: number;
+    id: number;
     description: string;
     deadline: string;
+    task: TaskType;
+    applications?: ApplicationType[];
 }
 
 export type TaskType = {
@@ -29,4 +31,5 @@ export type ApplicationType = {
     filePath: string;
     applicationDate: string;
     review?: string;
+    round?: RoundType;
 }

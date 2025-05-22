@@ -1,6 +1,7 @@
 package backend.competition_hub.controllers;
 
 import backend.competition_hub.entities.Application;
+import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
 import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.TaskRepository;
@@ -71,6 +72,60 @@ public class ApplicationController {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
         }
     }
+
+    @PostMapping("/{taskId}/round/{roundId}")
+    public ResponseEntity<String> handleFileUploadForRound(@PathVariable Long taskId,
+                                                           @PathVariable Long roundId,
+                                                           @RequestParam("file") MultipartFile file,
+                                                           @RequestParam("keycloakUserId") String keycloakUserId) {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body("No file uploaded.");
+        }
+
+        try {
+            // Célkönyvtár létrehozása, ha nem létezik
+            Path uploadPath = Paths.get(UPLOAD_DIR + taskId + "/round_" + roundId);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Fájl mentése
+            Path filePath = uploadPath.resolve(file.getOriginalFilename());
+            file.transferTo(filePath.toFile());
+
+            // Feladat lekérése az ID alapján
+            Task task = taskRepository.findById(taskId).orElse(null);
+            if (task == null) {
+                return ResponseEntity.badRequest().body("Task not found.");
+            }
+
+            // Round kiválasztása a Task alapján
+            Round round = task.getRounds().stream()
+                    .filter(r -> r.getId().equals(roundId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (round == null) {
+                return ResponseEntity.badRequest().body("Round not found in this Task.");
+            }
+
+            // Application entitás létrehozása és mentése
+            Application application = new Application();
+            application.setRound(round);
+            application.setTask(round.getTask());
+            application.setKeycloakUserId(keycloakUserId);
+            application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
+            application.setApplicationDate(new Date());
+            applicationRepository.save(application);
+
+            return ResponseEntity.ok("File uploaded and application submitted successfully.");
+
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
+        }
+    }
+
+
 
     @GetMapping("/download/{applicationId}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable Long applicationId) {

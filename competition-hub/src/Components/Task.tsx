@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Task.css';
 import { ApplicationType, RoundType } from '../types';
+import { useKeycloak } from '../KeycloakProvider';
 
 export default function Task({ id, title, descr, date, rounds, applications, editable }: { id: number, title: string, descr: string, date: string, rounds?: RoundType[], applications?: ApplicationType[], editable: boolean }) {
 
@@ -11,6 +12,36 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
     const [dateValue, setDateValue] = useState(date);
     const [roundsValue, setRoundsValue] = useState(rounds || []);
     const [applicationStates, setApplicationStates] = useState(applications || []);
+    const { user, isAuthenticated, hasRole, logout } = useKeycloak();
+
+    const [selectedFiles, setSelectedFiles] = useState<{ [roundId: number]: File | null }>({});
+
+    async function uploadToRound(roundId: number) {
+        if (!user) return;
+
+        const file = selectedFiles[roundId];
+        if (!file) {
+            alert("Please select a file first.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("keycloakUserId", user.id);
+
+        try {
+            const response = await fetch(`http://localhost:8081/api/applications/${id}/round/${roundId}`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.text();
+            alert(result);
+        } catch (e) {
+            console.error("Upload error:", e);
+            alert("Upload failed.");
+        }
+    }
 
 
     function formatDate(isoString: string | number | Date) {
@@ -42,6 +73,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
     async function handleSave() {
         try {
             const cleanedApplications = applicationStates.map(({ task, ...rest }) => rest);
+            const cleanedRounds = roundsValue.map(({ applications, ...rest }) => rest);
 
             const response = await fetch(`http://localhost:8081/api/tasks/${id}`, {
                 method: 'PUT',
@@ -52,13 +84,26 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                     title: titleValue,
                     description: descrValue,
                     applicationDeadline: dateValue,
-                    rounds: roundsValue,
-                    applications: cleanedApplications
+                    rounds: cleanedRounds
+                    //rounds: roundsValue,
+                    //applications: cleanedApplications
                 }),
             });
 
             if (!response.ok) {
                 throw new Error('Failed to update task');
+            }
+
+            for (const app of applicationStates) {
+                if (app.review != null) {
+                    await fetch(`http://localhost:8081/api/applications/${app.id}/review`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ review: app.review }),
+                    });
+                }
             }
 
             alert('Task updated successfully!');
@@ -159,6 +204,20 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                         <p>{round.description}</p>
                                         <h4>Deadline:</h4>
                                         <p>{formatDate(round.deadline)}</p>
+                                        <div className="upload-section">
+                                            <input
+                                                type="file"
+                                                onChange={(e) =>
+                                                    setSelectedFiles(prev => ({ ...prev, [round.id]: e.target.files?.[0] || null }))
+                                                }
+                                            />
+                                            <button
+                                                className="custom-button"
+                                                onClick={() => uploadToRound(round.id)}
+                                            >
+                                                Upload file to this round
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -173,7 +232,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                     <div className="add-round-container application">
                         {applicationStates.map((application, index) => (
                             <div key={application.id} className={`round-container application${editing ? " editing" : ""}`}
->
+                            >
                                 <h4 className="round-title">Application {index + 1}:</h4>
                                 <div className="task-grid">
                                     <h4>Application Date:</h4>

@@ -3,7 +3,7 @@ import PageTitle from "../Components/PageTitle";
 import Task from "../Components/Task";
 import './Apply.css';
 import { useEffect, useState } from "react";
-import { TaskType } from "../types";
+import { ApplicationType, RoundType, TaskType } from "../types";
 import { useKeycloak } from "../KeycloakProvider";
 
 export default function Apply() {
@@ -19,7 +19,23 @@ export default function Apply() {
                 if (!res.ok) throw new Error("Request for task was unsuccessful");
                 return res.json();
             })
-            .then((data) => setTask(data))
+            .then((data) => {
+                const directApps = data.applications || [];
+                const roundApps = data.rounds?.flatMap((r: RoundType) => r.applications || []) || [];
+
+                const uniqueMap = new Map<number, ApplicationType>();
+
+                [...directApps, ...roundApps].forEach((app) => {
+                    if (typeof app === "object" && app !== null && "id" in app) {
+                        uniqueMap.set(app.id, app as ApplicationType);
+                    }
+                });
+
+                const combinedApplications = Array.from(uniqueMap.values());
+
+                // Összeállított Task, kibővített applications-szel
+                setTask({ ...data, applications: combinedApplications });
+            })
             .catch((err) => console.error("Error: ", err));
     }, [id]);
 
