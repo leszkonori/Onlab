@@ -4,7 +4,7 @@ import './Task.css';
 import { ApplicationType, RoundType } from '../types';
 import { useKeycloak } from '../KeycloakProvider';
 
-export default function Task({ id, title, descr, date, rounds, applications, editable }: { id: number, title: string, descr: string, date: string, rounds?: RoundType[], applications?: ApplicationType[], editable: boolean }) {
+export default function Task({ id, title, descr, date, rounds, applications, editable, onSave }: { id: number, title: string, descr: string, date: string, rounds?: RoundType[], applications?: ApplicationType[], editable: boolean, onSave?: () => void; }) {
 
     const [editing, setEditing] = useState(false);
     const [titleValue, setTitleValue] = useState(title);
@@ -111,6 +111,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
 
             alert('Task updated successfully!');
             setEditing(false);
+            if(onSave) onSave();
         } catch (error) {
             console.error('Error updating task:', error);
             alert('Failed to update task');
@@ -135,7 +136,7 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
 
             if (response.ok) {
                 alert('Task deleted successfully!');
-                navigate('/active-tasks');
+                navigate('/');
             } else {
                 alert('Error: Could not delete the task!');
             }
@@ -187,6 +188,9 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                             const hasAppliedToThisRound = applicationStates.some(
                                 app => app.keycloakUserId === user?.id && app.round?.id === round.id
                             );
+                            const userApplicationForRound = applicationStates.find(
+                                app => app.keycloakUserId === user?.id && app.round?.id === round.id
+                            );
 
                             return (
                                 <div key={index} className="round-container">
@@ -209,11 +213,26 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                         </div>
                                     ) : (
                                         <>
+                                            {
+                                                hasAppliedToThisRound && (
+                                                    <>
+                                                        <h4>You have already applied for this round.</h4>
+                                                        <a className="download-button-a"
+                                                            href={`http://localhost:8081/api/applications/download/${userApplicationForRound?.id}`}
+                                                            download
+                                                        >
+                                                            <button className="custom-button">Download file</button>
+                                                        </a>
+                                                    </>
+                                                )
+                                            }
                                             <div className="task-grid">
                                                 <h4>Description:</h4>
                                                 <p>{round.description}</p>
                                                 <h4>Deadline:</h4>
                                                 <p>{formatDate(round.deadline)}</p>
+                                                <h4>Review:</h4>
+                                                <p>{userApplicationForRound?.review ? userApplicationForRound.review : "no review yet"}</p>
                                             </div>
                                             {!editable &&
                                                 activeRound &&
@@ -243,11 +262,6 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
                                                         </button>
                                                     </div>
                                                 )}
-                                                {
-                                                    hasAppliedToThisRound && (
-                                                        <h4>You have already applied for this round.</h4>
-                                                    )
-                                                }
                                         </>
                                     )}
                                 </div>

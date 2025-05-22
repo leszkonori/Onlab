@@ -13,7 +13,7 @@ export default function Apply() {
     const [message, setMessage] = useState("");
     const { user, isAuthenticated, hasRole, logout } = useKeycloak();
 
-    useEffect(() => {
+    const fetchTask = () => {
         fetch(`http://localhost:8081/api/tasks/${id}`)
             .then((res) => {
                 if (!res.ok) throw new Error("Request for task was unsuccessful");
@@ -24,7 +24,6 @@ export default function Apply() {
                 const roundApps = data.rounds?.flatMap((r: RoundType) => r.applications || []) || [];
 
                 const uniqueMap = new Map<number, ApplicationType>();
-
                 [...directApps, ...roundApps].forEach((app) => {
                     if (typeof app === "object" && app !== null && "id" in app) {
                         uniqueMap.set(app.id, app as ApplicationType);
@@ -36,6 +35,10 @@ export default function Apply() {
                 setTask({ ...data, applications: combinedApplications });
             })
             .catch((err) => console.error("Error: ", err));
+    };
+
+    useEffect(() => {
+        if (id) fetchTask();
     }, [id]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,6 +97,7 @@ export default function Apply() {
                 rounds={task.rounds}
                 applications={task.applications}
                 editable={user?.username === task.creator}
+                onSave={fetchTask}
             />}
             {task?.applications?.some(app => app.keycloakUserId === user?.id) && (!task?.rounds || task.rounds.length === 0) && (
                 <>
