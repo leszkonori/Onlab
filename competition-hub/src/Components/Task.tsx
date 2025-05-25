@@ -124,6 +124,30 @@ export default function Task({ id, title, descr, date, rounds, applications, edi
         setRoundsValue(updatedRounds);
     };
 
+    const handleReviewChange = (index: number, newReview: string) => {
+        const updated = [...applicationStates];
+        updated[index] = { ...updated[index], review: newReview };
+        setApplicationStates(updated);
+    };
+
+    const saveReview = async (appId: number, review: string) => {
+        try {
+            const res = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ review }),
+            });
+
+            if (!res.ok) throw new Error('Failed to save review');
+            alert('Review saved!');
+        } catch (error) {
+            console.error('Error saving review:', error);
+            alert('Could not save review');
+        }
+    };
+
     async function handleDelete() {
         const confirmed = window.confirm('Are you sure you want to delete this task?');
 

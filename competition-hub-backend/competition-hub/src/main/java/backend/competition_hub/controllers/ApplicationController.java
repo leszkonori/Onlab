@@ -7,6 +7,8 @@ import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,14 +45,15 @@ public class ApplicationController {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
 
+        String keycloakId = jwt.getSubject(); // Keycloak user ID (sub)
+        String username = jwt.getClaimAsString("preferred_username");
+
         try {
-            // Célkönyvtár létrehozása, ha nem létezik
             Path uploadPath = Paths.get(UPLOAD_DIR + taskId);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Fájl mentése
             Path filePath = uploadPath.resolve(file.getOriginalFilename());
             file.transferTo(filePath.toFile());
 
@@ -60,7 +63,18 @@ public class ApplicationController {
                 return ResponseEntity.badRequest().body("Task not found.");
             }
 
-            // Application entitás létrehozása és mentése
+            // 👤 Felhasználó kezelése
+            User user = userRepository.findByKeycloakId(keycloakId);
+            if (user == null) {
+                // Ha a felhasználó nem létezik, új felhasználót hozunk létre
+                user = new User();
+                user.setKeycloakId(keycloakId);
+                user.setUsername(username);
+                user.setEmail(jwt.getClaimAsString("email")); // Email is kinyerhető, ha kell
+                userRepository.save(user);
+            }
+
+            // 📄 Jelentkezés mentése
             Application application = new Application();
             application.setTask(task);
             application.setKeycloakUserId(keycloakUserId);
