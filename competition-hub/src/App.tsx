@@ -12,7 +12,6 @@ export default function App() {
       <Routes>
         <Route path="/" index element={<MainPage />} />
         <Route path="*" element={<MainPage />} />
-        <Route path="/active-tasks" element={<ActiveTasks />} />
         <Route path="/apply/:id" element={<Apply />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/new-task" element={<NewTaskPage />} />

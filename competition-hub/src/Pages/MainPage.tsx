@@ -1,5 +1,4 @@
 import './MainPage.css';
-import ListCard from "../Components/ListCard";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "../KeycloakProvider";
 import ActiveTasks from './ActiveTasks';
@@ -13,7 +12,6 @@ export default function MainPage() {
             <div className="main-title-container">
                 <h1 className="main-title">Competition Hub</h1>
             </div>
-            {/* <h2>Welcome {user?.name || user?.username}!</h2> */}
             <div className="page-title-container">
                 <h2 className="page-title">Active tasks</h2>
             </div>

@@ -25,8 +25,7 @@ export default function ActiveTasks() {
                         key={task.id}
                         title={task.title}
                         descr={task.description}
-                        link={`/apply/${task.id}`} // vagy akár csak /apply ha nincs részletes oldal
-                    //link={`/apply`}
+                        link={`/apply/${task.id}`}
                     />
                 ))}
             </ul>
