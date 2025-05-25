@@ -47,6 +47,7 @@ export default function NewTask() {
                 setTitle("");
                 setDescription("");
                 setDeadline("");
+                setRounds([]);
             })
             .catch((err) => {
                 alert("Error: " + err.message);
@@ -59,49 +60,50 @@ export default function NewTask() {
 
     return (
         <div className="task-container">
-            <div className="grid-wrapper">
-                <div className="task-grid">
-                    <h4 className="flex justify-end">Task name:</h4>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-                    <h4 className="flex justify-end">Description:</h4>
-                    <textarea
-                        className="w-80 h-40"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                    <h4 className="flex justify-end">Application deadline:</h4>
-                    <input
-                        type="date"
-                        value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
-                    />
-                    <h3>Fordulók:</h3>
-                    {rounds.map((round, index) => (
-                        <div key={index} className="round-input">
-                            <h4>Forduló {index + 1}:</h4>
-                            <label>Leírás:</label>
+            <div className="task-grid">
+                <h4>Task name:</h4>
+                <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                />
+                <h4>Description:</h4>
+                <textarea
+                    className="h-40"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                />
+                <h4>Application deadline:</h4>
+                <input
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                />
+            </div>
+            <div className="rounds-container">
+                <h4>Rounds:</h4>
+                {rounds.map((round, index) => (
+                    <div key={index} className="add-round-container">
+                        <h4 className="round-title">Round {index + 1}:</h4>
+                        <div className="task-grid">
+                            <h4>Round description:</h4>
                             <textarea
                                 value={round.description}
                                 onChange={(e) => handleRoundChange(index, "description", e.target.value)}
                             />
-                            <label>Határidő:</label>
+                            <h4>Round deadline:</h4>
                             <input
                                 type="datetime-local"
                                 value={round.deadline}
                                 onChange={(e) => handleRoundChange(index, "deadline", e.target.value)}
                             />
-                            <button onClick={() => handleRemoveRound(index)}>Eltávolítás</button>
                         </div>
-                    ))}
-                    <button onClick={handleAddRound}>Új forduló hozzáadása</button>
-                </div>
+                        <button className="custom-button" onClick={() => handleRemoveRound(index)}>Remove</button>
+                    </div>
+                ))}
             </div>
-
-            <button className="flex justify-self-center" onClick={handleSubmit}>Save</button>
+            <button className="custom-button" onClick={handleAddRound}>Add new round</button>
+            <button className="custom-button flex justify-self-center" onClick={handleSubmit}>Save</button>
         </div>
 
     );

@@ -1,7 +1,9 @@
 export type RoundType = {
-    id?: number;
+    id: number;
     description: string;
     deadline: string;
+    task: TaskType;
+    applications?: ApplicationType[];
 }
 
 export type TaskType = {
@@ -15,6 +17,7 @@ export type TaskType = {
 };
 
 export type User = {
+    id: string;
     username: string;
     email?: string;
     name?: string;
@@ -24,7 +27,10 @@ export type User = {
 export type ApplicationType = {
     id: number;
     task: TaskType;
-    user: any; // A User típusa, ha van
+    keycloakUserId: string;
+    keycloakUserName: string;
     filePath: string;
     applicationDate: string;
+    review?: string;
+    round?: RoundType;
 }

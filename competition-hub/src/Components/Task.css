@@ -1,46 +1,104 @@
-/* .grid-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 50px;
-}
-
-.task-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 300px);
-    overflow-wrap: wrap;
-    width: fit-content;
-    row-gap: 10px;
-    column-gap: 20px;
-} */
-
 .task-container {
     background-color: white;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
+    max-width: 800px;
+    width: 100%;
     margin: 20px auto;
 }
 
 .grid-wrapper {
+    width: 100%;
     display: flex;
     justify-content: center;
+    margin-bottom: 24px;
 }
 
 .task-grid {
+    width: 100%;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 10px;
-    align-items: center;
+
+    >h4 {
+        display: flex;
+        justify-content: flex-end;
+    }
 }
 
-.task-grid h4 {
-    font-size: 1rem;
+.task-container h4 {
+    font-size: 24px;
     font-weight: bold;
-    color: #333;
+    color: var(--dark-blue);
 }
 
 .task-grid p {
-    font-size: 1rem;
+    font-size: 16px;
     color: #555;
+}
+
+.rounds-container {
+    margin-bottom: 12px;
+}
+
+.add-round-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.round-title {
+    margin-bottom: 10px;
+    text-decoration: underline;
+}
+
+.add-round-container button {
+    width: fit-content;
+}
+
+.add-round-container h4 {
+    font-size: 16px;
+}
+
+.task-container p {
+    align-self: center;
+}
+
+.round-container {
+    margin-bottom: 12px;
+}
+.task-grid.edit{
+    grid-template-columns: minmax(0px, 500px) auto;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.download-button-a .custom-button{
+    margin-top: 10px;
+}
+
+.add-round-container.application {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.round-container.application {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 10px;
+    width: fit-content;
+}
+.round-container.application.editing {
+    width: 100%;
+}
+
+.round-container.application {
+    margin-bottom: 0px;
 }

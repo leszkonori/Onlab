@@ -9,7 +9,9 @@ import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -62,12 +64,27 @@ public class TaskController {
                     task.setTitle(updatedTask.getTitle());
                     task.setDescription(updatedTask.getDescription());
                     task.setApplicationDeadline(updatedTask.getApplicationDeadline());
+//                    if (updatedTask.getRounds() != null) {
+//                        for (Round round : updatedTask.getRounds()) {
+//                            round.setTask(task);  // Újra összekapcsoljuk a taskot a rounddal
+//                        }
+//                        roundRepository.saveAll(updatedTask.getRounds()); // Mentjük a frissített roundokat
+//                    }
                     if (updatedTask.getRounds() != null) {
                         for (Round round : updatedTask.getRounds()) {
-                            round.setTask(task);  // Újra összekapcsoljuk a taskot a rounddal
+                            round.setTask(task);
+                            round.setApplications(Collections.emptyList()); // 💥 ne null legyen, hanem üres lista
                         }
-                        roundRepository.saveAll(updatedTask.getRounds()); // Mentjük a frissített roundokat
+                        roundRepository.saveAll(updatedTask.getRounds());
                     }
+
+//                    if (updatedTask.getApplications() != null) {
+//                        // Fontos: a task referenciát beállítjuk az alkalmazásokra is
+//                        updatedTask.getApplications().forEach(app -> app.setTask(task));
+//                        // Kiürítjük a régieket, majd hozzáadjuk az újak, így a review-k is frissülnek
+//                        task.getApplications().clear();
+//                        task.getApplications().addAll(updatedTask.getApplications());
+//                    }
 
                     Task savedTask = taskRepository.save(task);
                     return ResponseEntity.ok(savedTask);

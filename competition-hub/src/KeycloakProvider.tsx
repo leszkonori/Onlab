@@ -42,6 +42,7 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
                     const roles = parsed.realm_access?.roles || [];
 
                     setUser({
+                        id: parsed.sub || '',
                         username: parsed.preferred_username || '',
                         email: parsed.email,
                         name: parsed.name,
