@@ -25,7 +25,7 @@ export default function NewTask() {
         const task = {
             title,
             description,
-            applicationDeadline: deadline,
+            applicationDeadline: rounds.length === 0 ? deadline : null,
             creator: user?.username,
             rounds: rounds,
         };
@@ -73,12 +73,16 @@ export default function NewTask() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                 />
-                <h4>Application deadline:</h4>
-                <input
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                />
+                {rounds.length === 0 && (
+                    <>
+                        <h4>Application deadline:</h4>
+                        <input
+                            type="date"
+                            value={deadline}
+                            onChange={(e) => setDeadline(e.target.value)}
+                        />
+                    </>
+                )}
             </div>
             <div className="rounds-container">
                 <h4>Rounds:</h4>
@@ -93,7 +97,7 @@ export default function NewTask() {
                             />
                             <h4>Round deadline:</h4>
                             <input
-                                type="datetime-local"
+                                type="date"
                                 value={round.deadline}
                                 onChange={(e) => handleRoundChange(index, "deadline", e.target.value)}
                             />

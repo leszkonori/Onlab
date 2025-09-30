@@ -6,7 +6,10 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+
 
 @Data
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -34,8 +37,17 @@ public class Task {
     private List<Round> rounds;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference(value = "task-application")
     private List<Application> applications;
 
-
+    @PrePersist
+    @PreUpdate
+    private void syncDeadlineFromRounds() {
+        if (rounds != null && !rounds.isEmpty()) {
+            this.applicationDeadline = rounds.stream()
+                    .map(Round::getDeadline)     // már LocalDate
+                    .filter(Objects::nonNull)
+                    .min(Comparator.naturalOrder())
+                    .orElse(this.applicationDeadline);
+        }
+    }
 }
