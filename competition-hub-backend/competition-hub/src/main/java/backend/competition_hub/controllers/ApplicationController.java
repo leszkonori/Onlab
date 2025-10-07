@@ -1,5 +1,6 @@
 package backend.competition_hub.controllers;
 
+import backend.competition_hub.EvaluationType;
 import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,6 +30,11 @@ public class ApplicationController {
 
     private final ApplicationRepository applicationRepository;
     private final TaskRepository taskRepository;
+
+    public static class ReviewDto {
+        public String text;     // opcionális
+        public Integer points;  // opcionális, 0..10
+    }
 
     public ApplicationController(ApplicationRepository applicationRepository, TaskRepository taskRepository) {
         this.applicationRepository = applicationRepository;
@@ -130,8 +137,6 @@ public class ApplicationController {
         }
     }
 
-
-
     @GetMapping("/download/{applicationId}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable Long applicationId) {
         Application application = applicationRepository.findById(applicationId).orElse(null);
@@ -158,14 +163,78 @@ public class ApplicationController {
         }
     }
 
+//    @PutMapping("/{id}/review")
+//    public ResponseEntity<Application> updateReview(@PathVariable Long id, @RequestBody Map<String, String> body) {
+//        return applicationRepository.findById(id).map(app -> {
+//            app.setReview(body.get("review"));
+//            applicationRepository.save(app);
+//            return ResponseEntity.ok(app);
+//        }).orElse(ResponseEntity.notFound().build());
+//    }
+
     @PutMapping("/{id}/review")
-    public ResponseEntity<Application> updateReview(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<Application> updateReview(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
         return applicationRepository.findById(id).map(app -> {
-            app.setReview(body.get("review"));
+            // Task felkutatása (közvetlenül vagy round-on keresztül)
+            Task task = null;
+            if (app.getTask() != null) {
+                task = app.getTask();
+            } else if (app.getRound() != null && app.getRound().getTask() != null) {
+                task = app.getRound().getTask();
+            }
+            if (task == null) {
+                return ResponseEntity.badRequest().<Application>build();
+            }
+
+            EvaluationType et = task.getEvaluationType(); // TEXT | POINTS | BOTH (esetleg NUMERIC régről)
+
+            // Kivesszük a bejövő értékeket (visszafelé kompatibilitás: "review" -> text)
+            String text = body.getOrDefault("text", body.get("review"));
+            String pointsStr = body.get("points");
+            Integer points = null;
+            if (pointsStr != null && !pointsStr.isBlank()) {
+                try {
+                    points = Integer.valueOf(pointsStr);
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.badRequest().<Application>build();
+                }
+            }
+
+            switch (et) {
+                case TEXT:
+                    // csak szöveg
+                    app.setReviewText((text != null && !text.isBlank()) ? text : null);
+                    app.setReviewPoints(null);
+                    break;
+
+                case BOTH:
+                    // szöveg opcionális, pont opcionális (0..10, ha meg van adva)
+                    if (points != null && (points < 0 || points > 10)) {
+                        return ResponseEntity.badRequest().<Application>build();
+                    }
+                    app.setReviewText((text != null && !text.isBlank()) ? text : null);
+                    app.setReviewPoints(points);
+                    break;
+
+                case POINTS:
+                    // csak pont kötelező, 0..10
+                    if (points == null || points < 0 || points > 10) {
+                        return ResponseEntity.badRequest().<Application>build();
+                    }
+                    app.setReviewText(null);
+                    app.setReviewPoints(points);
+                    break;
+
+            }
+
             applicationRepository.save(app);
             return ResponseEntity.ok(app);
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.notFound().<Application>build());
     }
+
 
     @GetMapping("/by-user/{keycloakUserId}")
     public ResponseEntity<List<Application>> getApplicationsByUser(@PathVariable String keycloakUserId) {

@@ -33,7 +33,13 @@ public class Application {
 
     private String filePath;
     private LocalDateTime applicationDate;
-    private String review;
+    //private String review;
+
+    @Column(name = "review_text")
+    private String reviewText;
+
+    @Column(name = "review_points")
+    private Integer reviewPoints;
 
     public Application() {}
 

@@ -14,6 +14,7 @@ export type TaskType = {
     creator: string;
     rounds?: RoundType[];
     applications?: ApplicationType[];
+    evaluationType: EvaluationType;
 };
 
 export type User = {
@@ -33,4 +34,8 @@ export type ApplicationType = {
     applicationDate: string;
     review?: string;
     round?: RoundType;
+    reviewText?: string;
+    reviewPoints?: number | null;
 }
+
+export type EvaluationType = "TEXT" | "POINTS" | "BOTH";

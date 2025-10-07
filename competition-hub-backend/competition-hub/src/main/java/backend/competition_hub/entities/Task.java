@@ -1,5 +1,6 @@
 package backend.competition_hub.entities;
 
+import backend.competition_hub.EvaluationType;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -31,6 +32,10 @@ public class Task {
 
     @Column(nullable = false)
     private String creator;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EvaluationType evaluationType;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

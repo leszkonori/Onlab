@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Task.css';
-import { ApplicationType, RoundType } from '../types';
+import { ApplicationType, EvaluationType, RoundType } from '../types';
 import { useKeycloak } from '../KeycloakProvider';
 
 export default function Task({
@@ -13,6 +13,7 @@ export default function Task({
   applications,
   editable,
   onSave,
+  evaluationType,
 }: {
   id: number;
   title: string;
@@ -22,6 +23,7 @@ export default function Task({
   applications?: ApplicationType[];
   editable: boolean;
   onSave?: () => void;
+  evaluationType: EvaluationType;
 }) {
   const [editing, setEditing] = useState(false);
   const [titleValue, setTitleValue] = useState(title);
@@ -34,7 +36,7 @@ export default function Task({
   const [selectedFiles, setSelectedFiles] = useState<{ [roundId: number]: File | null }>({});
   // Új state a review szerkesztéséhez
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
-  
+
   // Új state a review szerkesztés MELLETT: itt tároljuk az eredeti, mentett review-t a Cancel-hez.
   const [originalReviewCache, setOriginalReviewCache] = useState<string | undefined | null>(undefined);
 
@@ -163,7 +165,7 @@ export default function Task({
   }
 
   // Új funkció egyetlen review mentéséhez
-  async function handleSaveReview(appId: number, review: string | null) {
+  async function handleSaveReview(appId: number, text: string | null, points: number | null) {
     try {
       // 1. A review küldése az API-nak (itt string | null a jó)
       const response = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
@@ -171,7 +173,7 @@ export default function Task({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ review: review }),
+        body: JSON.stringify({ text, points }),
       });
 
       if (!response.ok) {
@@ -181,18 +183,13 @@ export default function Task({
       alert('Review updated successfully!');
       setEditingReviewId(null);
       setOriginalReviewCache(undefined); // Töröljük a cache-t, mivel az új érték most már mentettnek számít.
-      
-      // 2. A hiba javítása: Konvertáljuk a null-t undefined-ra, mielőtt visszaírjuk a state-be
-      // Mivel az ApplicationType-ban a review: string | undefined
-      const stateReview = review === null ? undefined : review;
 
-      setApplicationStates((prev) =>
-        // Itt használjuk a konvertált stateReview-t
-        prev.map((app) => (app.id === appId ? { ...app, review: stateReview } : app))
+      setApplicationStates(prev =>
+        prev.map(app => app.id === appId ? { ...app, reviewText: text ?? undefined, reviewPoints: points } : app)
       );
-      
+
       // Jelzés a szülőnek, hogy frissítheti az adatokat (opcionális, de jó gyakorlat)
-      if (onSave) onSave(); 
+      if (onSave) onSave();
 
     } catch (error) {
       console.error('Error updating review:', error);
@@ -233,16 +230,12 @@ export default function Task({
     setApplicationStates(updated);
   };
 
-  /**
-   * Visszaállítja a reviewt a legutóbb mentett értékre.
-   * FIX: Most már a szerkesztés megkezdésekor cachelt értéket használja az elavult prop helyett.
-   */
   const handleCancelReviewEdit = (appId: number) => {
     // Használjuk a szerkesztés megkezdésekor cachelt értéket. (null/undefined jöhet be)
     const originalReview = originalReviewCache === null ? undefined : originalReviewCache;
 
     setApplicationStates((prev) =>
-      prev.map((app) => 
+      prev.map((app) =>
         app.id === appId ? { ...app, review: originalReview } : app
       )
     );
@@ -250,6 +243,18 @@ export default function Task({
     setEditingReviewId(null);
   };
 
+  const handleReviewTextChange = (id: number, newText: string) => {
+    setApplicationStates(prev =>
+      prev.map(app => app.id === id ? { ...app, reviewText: newText } : app)
+    );
+  };
+
+  const handleReviewPointsChange = (id: number, newPointsStr: string) => {
+    const val = newPointsStr === "" ? null : Math.max(0, Math.min(10, Number(newPointsStr)));
+    setApplicationStates(prev =>
+      prev.map(app => app.id === id ? { ...app, reviewPoints: val } : app)
+    );
+  };
 
   return (
     <div className="task-container">
@@ -394,16 +399,45 @@ export default function Task({
                   {editingReviewId === application.id ? (
                     <>
                       <h4>Review:</h4>
-                      <textarea
-                        // Itt használjuk a nullish coalescing operátort, hogy string legyen (üres string, ha undefined)
-                        value={application.review || ''}
-                        onChange={(e) => handleReviewChange(application.id, e.target.value)}
-                      />
+
+                      {(evaluationType === "TEXT" || evaluationType === "BOTH") && (
+                        <>
+                          <label>Text</label>
+                          <textarea
+                            value={application.reviewText || ''}
+                            onChange={(e) => handleReviewTextChange(application.id, e.target.value)}
+                          />
+                        </>
+                      )}
+
+                      {(evaluationType === "POINTS" || evaluationType === "BOTH") && (
+                        <>
+                          <label>Points (0–10)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            max={10}
+                            value={application.reviewPoints ?? ''}
+                            onChange={(e) => handleReviewPointsChange(application.id, e.target.value)}
+                          />
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
                       <h4>Review:</h4>
-                      <p>{application.review ? application.review : 'not reviewed'}</p>
+                      <p>
+                        {(evaluationType === "TEXT" || evaluationType === "BOTH")
+                          ? (application.reviewText ? application.reviewText : 'not reviewed')
+                          : (application.reviewPoints != null ? `${application.reviewPoints}/10` : 'not reviewed')
+                        }
+                        {evaluationType === "BOTH" && (
+                          <>
+                            {" "}
+                            {application.reviewPoints != null ? `(${application.reviewPoints}/10)` : ''}
+                          </>
+                        )}
+                      </p>
                     </>
                   )}
                 </div>
@@ -415,7 +449,7 @@ export default function Task({
                 >
                   <button className="custom-button">Download file</button>
                 </a>
-                
+
                 {/* Review szerkesztés gombok */}
                 <div className="review-buttons-container">
                   {/* CSAK AKKOR jelenítjük meg a review gombokat, ha a TASK NINCS szerkesztés alatt */}
@@ -423,30 +457,34 @@ export default function Task({
                     <>
                       {editingReviewId === application.id ? (
                         <>
-                          <button 
-                            className="custom-button" 
+                          <button
+                            className="custom-button"
                             // JAVÍTÁS ITT: undefined-ból null-t csinálunk a híváskor
-                            onClick={() => handleSaveReview(application.id, application.review ?? null)}
+                            onClick={() => handleSaveReview(
+                              application.id,
+                              application.reviewText ?? null,
+                              application.reviewPoints ?? null
+                            )}
                           >
                             Save Review
                           </button>
-                          <button 
-                            className="custom-button" 
+                          <button
+                            className="custom-button"
                             onClick={() => handleCancelReviewEdit(application.id)}
                           >
                             Cancel
                           </button>
                         </>
                       ) : (
-                        <button 
-                          className="custom-button" 
+                        <button
+                          className="custom-button"
                           onClick={() => {
                             setEditingReviewId(application.id);
                             // Cache-eljük az aktuális (mentett) értéket a local state-ből a Cancel funkcióhoz
                             setOriginalReviewCache(application.review);
                           }}
                           // Mivel a szülő div már figyel az !editing feltételre, ez már nem szükséges, de biztonsági okból bent hagyom:
-                          disabled={editing} 
+                          disabled={editing}
                         >
                           Edit Review
                         </button>
@@ -465,12 +503,12 @@ export default function Task({
           {/* TASK fő gombok: Csak akkor jelennek meg, ha sem a TASK, sem a REVIEW nincs szerkesztés alatt */}
           {!editing && !isAnyReviewEditing && (
             <div className="buttons-container">
-              <button 
-                className="custom-button" 
+              <button
+                className="custom-button"
                 onClick={() => {
                   setEditing(true);
                   // Amikor elkezdjük a Task főszerkesztését, bezárjuk a Review szerkesztő ablakot
-                  setEditingReviewId(null); 
+                  setEditingReviewId(null);
                 }}
               >
                 Edit

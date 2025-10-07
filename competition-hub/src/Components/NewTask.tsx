@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useKeycloak } from "../KeycloakProvider";
-import { RoundType } from "../types";
+import { EvaluationType, RoundType } from "../types";
 
 export default function NewTask() {
     const { user, isAuthenticated, hasRole, logout } = useKeycloak();
@@ -9,6 +9,7 @@ export default function NewTask() {
     const [description, setDescription] = useState("");
     const [deadline, setDeadline] = useState("");
     const [rounds, setRounds] = useState<RoundType[]>([]);
+    const [evaluationType, setEvaluationType] = useState<EvaluationType>("TEXT");
 
     const handleAddRound = () => {
         setRounds([...rounds, { description: "", deadline: "" }]);
@@ -28,8 +29,8 @@ export default function NewTask() {
             applicationDeadline: rounds.length === 0 ? deadline : null,
             creator: user?.username,
             rounds: rounds,
+            evaluationType,
         };
-        console.log(task);
 
         fetch("http://localhost:8081/api/tasks", {
             method: "POST",
@@ -83,6 +84,15 @@ export default function NewTask() {
                         />
                     </>
                 )}
+                <h4>Review type:</h4>
+                <select
+                    value={evaluationType}
+                    onChange={(e) => setEvaluationType(e.target.value as EvaluationType)}
+                >
+                    <option value="TEXT">Text</option>
+                    <option value="POINTS">Points</option>
+                    <option value="BOTH">Both</option>
+                </select>
             </div>
             <div className="rounds-container">
                 <h4>Rounds:</h4>
