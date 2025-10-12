@@ -346,7 +346,14 @@ export default function Task({
                             : '—'}
                         </p>
                         <h4>Review:</h4>
-                        <p>{userApplicationForRound?.review ? userApplicationForRound.review : 'no review yet'}</p>
+                        <p>
+                          {(evaluationType === "TEXT" || evaluationType === "BOTH")
+                            ? (userApplicationForRound?.reviewText ? userApplicationForRound.reviewText : 'no review yet')
+                            : (userApplicationForRound?.reviewPoints != null ? `${userApplicationForRound.reviewPoints}/10` : 'no review yet')}
+                          {evaluationType === "BOTH" && userApplicationForRound?.reviewPoints != null && (
+                            <> ({userApplicationForRound.reviewPoints}/10)</>
+                          )}
+                        </p>
                       </div>
                       {!editable && activeRound && round.id === activeRound.id && !hasAppliedToThisRound && (
                         <div className="upload-section">
