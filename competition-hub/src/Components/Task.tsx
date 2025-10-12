@@ -65,6 +65,8 @@ export default function Task({
 
       const result = await response.text();
       alert(result);
+      window.location.reload();
+      
     } catch (e) {
       console.error('Upload error:', e);
       alert('Upload failed.');
@@ -364,15 +366,28 @@ export default function Task({
                               id={`fileInput-${round.id}`}
                               accept=".zip"
                               style={{ display: 'none' }}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
                                 setSelectedFiles((prev) => ({
                                   ...prev,
-                                  [round.id as number]: e.target.files?.[0] || null,
-                                }))
-                              }
+                                  [round.id as number]: file,
+                                }));
+                              }}
                             />
                           </label>
-                          <button className="custom-button" onClick={() => uploadToRound(round.id as number)}>
+
+                          {/* Ha van kiválasztott fájl, mutassuk a nevét */}
+                          {selectedFiles[round.id as number] && (
+                            <p style={{ marginLeft: '10px' }}>
+                              Selected file: {selectedFiles[round.id as number]?.name}
+                            </p>
+                          )}
+
+                          <button
+                            className="custom-button"
+                            onClick={() => uploadToRound(round.id as number)}
+                            disabled={!selectedFiles[round.id as number]}
+                          >
                             Apply
                           </button>
                         </div>
