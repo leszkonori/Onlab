@@ -9,9 +9,10 @@ import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -87,6 +88,22 @@ public class TaskController {
                     return ResponseEntity.ok().build(); // Visszaadjuk a 200 OK választ
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build()); // Ha nem találjuk, 404-et adunk
+    }
+
+    // ÚJ METÓDUS: Értesítések számának lekérése
+    @GetMapping("/notifications/new/{creator}")
+    public ResponseEntity<Long> getNewApplicationCountForCreator(@PathVariable String creator) {
+        Long newApplicationsCount = taskRepository.countNewApplicationsForCreator(creator);
+        return ResponseEntity.ok(newApplicationsCount);
+    }
+
+    @PutMapping("/{id}/touch-view")
+    public ResponseEntity<Object> touchView(@PathVariable Long id) {
+        return taskRepository.findById(id).map(task -> {
+            task.setCreatorLastViewedAt(LocalDateTime.now());
+            taskRepository.save(task);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Task.css';
 import { ApplicationType, EvaluationType, RoundType } from '../types';
@@ -42,6 +42,26 @@ export default function Task({
 
   // Segédváltozó, amely mutatja, hogy éppen szerkesztés alatt van-e valamelyik review
   const isAnyReviewEditing = editingReviewId !== null;
+
+  // ÚJ EFFECT: Task megtekintési idejének frissítése
+  useEffect(() => {
+    // Csak akkor hívjuk meg, ha a creator nézi a taskot
+    if (editable) { 
+        async function touchView() {
+            try {
+                // Hívjuk meg a TaskController új elérési útvonalát
+                await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
+                    method: 'PUT',
+                });
+                // Ezzel a Task.creatorLastViewedAt frissül, így a főoldalon eltűnik az értesítés.
+            } catch (error) {
+                console.error("Error touching view:", error);
+            }
+        }
+        touchView();
+    }
+  }, [id, editable]);
+
 
   async function uploadToRound(roundId: number) {
     if (!user) return;
