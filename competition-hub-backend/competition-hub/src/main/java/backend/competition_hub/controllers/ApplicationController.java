@@ -1,6 +1,7 @@
 package backend.competition_hub.controllers;
 
 import backend.competition_hub.EvaluationType;
+import backend.competition_hub.dtos.ApplicationNotificationDTO;
 import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
@@ -240,5 +241,44 @@ public class ApplicationController {
     public ResponseEntity<List<Application>> getApplicationsByUser(@PathVariable String keycloakUserId) {
         List<Application> apps = applicationRepository.findByKeycloakUserId(keycloakUserId);
         return ResponseEntity.ok(apps);
+    }
+
+    // ÚJ VÉGPONT: Jelentkező értesítései (Review-k)
+    @GetMapping("/notifications/{username}")
+    public ResponseEntity<List<ApplicationNotificationDTO>> getReviewsWithNewCount(@PathVariable String username) {
+
+        List<Object[]> results = applicationRepository.getTasksWithNewReviewCount(username);
+
+        List<ApplicationNotificationDTO> notifications = results.stream()
+                .map(result -> new ApplicationNotificationDTO(
+                        ((Number) result[0]).longValue(),     // Task ID
+                        (String) result[1],                   // Task Title
+                        ((Number) result[2]).longValue()      // New Reviews Count
+                ))
+                .toList();
+
+        return ResponseEntity.ok(notifications);
+    }
+
+    // ÚJ VÉGPONT: Értesítés eltüntetése (Amikor a user megnézi a Task oldalt)
+    @PutMapping("/tasks/{taskId}/touch-review-view/{username}")
+    public ResponseEntity<Object> touchReviewView(@PathVariable Long taskId, @PathVariable String username) {
+
+        // Megkeressük az összes Application-t a Task-hoz, amit ez a user küldött
+        List<Application> applications = applicationRepository.findByTaskIdAndKeycloakUserName(taskId, username);
+
+        if (applications.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        // Frissítjük a nézettség időpontját mindegyik Application-höz
+        applications.forEach(app -> {
+            app.setApplicantLastViewedReviewAt(now);
+        });
+
+        applicationRepository.saveAll(applications);
+
+        return ResponseEntity.ok().build();
     }
 }

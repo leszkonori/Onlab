@@ -43,24 +43,39 @@ export default function Task({
   // Segédváltozó, amely mutatja, hogy éppen szerkesztés alatt van-e valamelyik review
   const isAnyReviewEditing = editingReviewId !== null;
 
-  // ÚJ EFFECT: Task megtekintési idejének frissítése
-  useEffect(() => {
-    // Csak akkor hívjuk meg, ha a creator nézi a taskot
-    if (editable) { 
-        async function touchView() {
-            try {
-                // Hívjuk meg a TaskController új elérési útvonalát
-                await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
-                    method: 'PUT',
-                });
-                // Ezzel a Task.creatorLastViewedAt frissül, így a főoldalon eltűnik az értesítés.
-            } catch (error) {
-                console.error("Error touching view:", error);
+  // ÉRTESÍTÉS FRISSÍTŐ EFFECT
+    useEffect(() => {
+        // 1. Task Creator View (Új Application-ök eltüntetése)
+        if (editable) { 
+            async function touchCreatorView() {
+                try {
+                    await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
+                        method: 'PUT',
+                    });
+                } catch (error) {
+                    console.error("Error touching creator view:", error);
+                }
             }
+            touchCreatorView();
         }
-        touchView();
-    }
-  }, [id, editable]);
+        
+        // 2. Applicant View (Új Review-k eltüntetése)
+        // Ha NEM a Task creator nézi (editable: false), és be van jelentkezve, frissítjük a Review nézettséget.
+        if (!editable && user?.username) {
+            async function touchApplicantReviewView() {
+                try {
+                    // Meghívjuk az új ApplicationController-beli endpointot
+                    await fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
+                        method: 'PUT',
+                    });
+                } catch (error) {
+                    console.error("Error touching applicant review view:", error);
+                }
+            }
+            touchApplicantReviewView();
+        }
+
+    }, [id, editable, user?.username]); // user.username függőség kell!
 
 
   async function uploadToRound(roundId: number) {

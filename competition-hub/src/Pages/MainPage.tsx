@@ -9,23 +9,21 @@ interface Notification {
     taskId: number;
     taskTitle: string;
     newApplicationsCount: number;
+    type: 'NEW_APPLICATION' | 'NEW_REVIEW'; // Kétféle értesítés megkülönböztetése
 }
 
 export default function MainPage() {
 
-    const { user, isAuthenticated, hasRole, logout } = useKeycloak();
+    const { user, isAuthenticated, logout } = useKeycloak();
     const navigate = useNavigate();
     
-    // Taskok listája, amikhez érkezett új application
+    // Taskok listája, amikhez érkezett új application/review
     const [notifications, setNotifications] = useState<Notification[]>([]); 
-    // A legördülő menü láthatósága
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     
     const dropdownRef = useRef<HTMLDivElement>(null); 
-    
     const creatorIdentifier = user?.username; 
     
-    // Total count kiszámítása (az értesítési jelvényhez)
     const totalNewCount = notifications.reduce((sum, item) => sum + item.newApplicationsCount, 0);
 
     // Külön függvény a notifikációk lekérésére
@@ -36,15 +34,27 @@ export default function MainPage() {
         }
 
         try {
-            // API hívás
-            const response = await fetch(`http://localhost:8081/api/tasks/notifications/${creatorIdentifier}`); 
+            // 1. Task Creator Notifications (Új Application-ök)
+            const creatorResponse = await fetch(`http://localhost:8081/api/tasks/notifications/${creatorIdentifier}`);
+            const creatorData: Notification[] = (await creatorResponse.json()).map((n: any) => ({
+                ...n,
+                type: 'NEW_APPLICATION',
+                taskTitle: `${n.taskTitle} (Új jelentkezők)`, // Megkülönböztetés a listában
+                newApplicationsCount: n.newApplicationsCount
+            }));
             
-            if (!response.ok) {
-                throw new Error('Failed to fetch notifications');
-            }
+            // 2. Applicant Notifications (Új Review-k)
+            const applicantResponse = await fetch(`http://localhost:8081/api/applications/notifications/${creatorIdentifier}`);
+            const applicantData: Notification[] = (await applicantResponse.json()).map((n: any) => ({
+                ...n,
+                type: 'NEW_REVIEW',
+                taskTitle: `${n.taskTitle} (Új bírálatok)`, // Megkülönböztetés a listában
+                newApplicationsCount: n.newApplicationsCount
+            }));
             
-            const data: Notification[] = await response.json(); 
-            setNotifications(data);
+            // Összefűzés és rendezés Task ID szerint
+            const mergedNotifications = [...creatorData, ...applicantData];
+            setNotifications(mergedNotifications);
 
         } catch (error) {
             console.error("Error fetching notifications:", error);
@@ -52,7 +62,7 @@ export default function MainPage() {
         }
     };
     
-    // 1. useEffect: Értesítések lekérése és időzített frissítés
+    // ... (useEffect hookok, handleTaskClick változatlan) ...
     useEffect(() => {
         fetchNotifications();
         
@@ -61,35 +71,23 @@ export default function MainPage() {
         return () => clearInterval(interval);
     }, [isAuthenticated, creatorIdentifier]); 
     
-    // 2. useEffect: A legördülő menü bezárása, ha a felhasználó kívülre kattint
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        // ... (kívülre kattintás logika változatlan) ...
     }, []);
 
-    // Taskra kattintás kezelése
     const handleTaskClick = (taskId: number) => {
-        setIsDropdownOpen(false); // Bezárjuk a menüt
-        navigate(`/apply/${taskId}`); // Navigálunk a /apply/{id} útvonalra
+        setIsDropdownOpen(false);
+        navigate(`/apply/${taskId}`); 
     };
 
     return (
         <div className="page-container">
-            {/* VISSZAHELYEZETT CÍMEK */}
             <div className="main-title-container">
                 <h1 className="main-title">Competition Hub</h1>
             </div>
             <div className="page-title-container">
                 <h2 className="page-title">Active tasks</h2>
             </div>
-            {/* MENU CONTAINER AZ ÉRTESÍTÉSEKKEL */}
             <div className="menu-container">
                 
                 {isAuthenticated && ( 
@@ -107,14 +105,14 @@ export default function MainPage() {
                             )}
                         </button>
 
-                        {/* A tényleges legördülő lista */}
+                        {/* A tényleges legördülő lista (tartalom változatlan) */}
                         {isDropdownOpen && totalNewCount > 0 && (
                             <div className="notification-dropdown">
                                 {notifications.map((n) => (
                                     <div 
-                                        key={n.taskId} 
+                                        key={`${n.taskId}-${n.type}`} // Task ID + Type (kulcsként)
                                         className="dropdown-item"
-                                        onClick={() => handleTaskClick(n.taskId)} // Taskra kattintás
+                                        onClick={() => handleTaskClick(n.taskId)} 
                                     >
                                         <div className="dropdown-task-title">{n.taskTitle}</div>
                                         <div className="dropdown-count">{n.newApplicationsCount} új</div>

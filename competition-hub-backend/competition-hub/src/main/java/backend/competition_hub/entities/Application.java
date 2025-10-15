@@ -41,6 +41,9 @@ public class Application {
     @Column(name = "review_points")
     private Integer reviewPoints;
 
+    @Column(name = "applicant_last_viewed_review_at")
+    private LocalDateTime applicantLastViewedReviewAt;
+
     public Application() {}
 
     public Application(Task task, String keycloakUserId, String keycloakUserName, String filePath, LocalDateTime applicationDate) {
