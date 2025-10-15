@@ -1,5 +1,6 @@
 package backend.competition_hub.controllers;
 
+import backend.competition_hub.dtos.ApplicationNotificationDTO;
 import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
@@ -90,11 +91,22 @@ public class TaskController {
                 .orElseGet(() -> ResponseEntity.notFound().build()); // Ha nem találjuk, 404-et adunk
     }
 
-    // ÚJ METÓDUS: Értesítések számának lekérése
-    @GetMapping("/notifications/new/{creator}")
-    public ResponseEntity<Long> getNewApplicationCountForCreator(@PathVariable String creator) {
-        Long newApplicationsCount = taskRepository.countNewApplicationsForCreator(creator);
-        return ResponseEntity.ok(newApplicationsCount);
+    // Módosított Metódus: Visszaadja a Taskok listáját és az új application-ök számát
+    @GetMapping("/notifications/{creator}") // Kivehetjük a /{creator}-t, ha a Keycloak usernamet használjuk Service-ben (így könnyebb)
+    public ResponseEntity<List<ApplicationNotificationDTO>> getTasksWithNewApplicationCounts(@PathVariable String creator) {
+
+        List<Object[]> results = taskRepository.getTasksWithNewApplicationCount(creator);
+
+        // Konvertáljuk az Object[] listát ApplicationNotificationDTO listává
+        List<ApplicationNotificationDTO> notifications = results.stream()
+                .map(result -> new ApplicationNotificationDTO(
+                        ((Number) result[0]).longValue(),     // JAVÍTVA: Biztonságos casting Long-ra
+                        (String) result[1],                   // Task Title
+                        ((Number) result[2]).longValue()      // JAVÍTVA: Biztonságos casting Long-ra
+                ))
+                .toList();
+
+        return ResponseEntity.ok(notifications);
     }
 
     @PutMapping("/{id}/touch-view")
