@@ -1,6 +1,7 @@
 package backend.competition_hub.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -27,5 +28,6 @@ public class Round {
     private LocalDate deadline;
 
     @OneToMany(mappedBy = "round")
+    @JsonIgnore
     private List<Application> applications;
 }
