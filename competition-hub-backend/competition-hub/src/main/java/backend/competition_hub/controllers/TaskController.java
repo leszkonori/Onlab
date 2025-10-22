@@ -117,5 +117,18 @@ public class TaskController {
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    // ÚJ VÉGPONT: Kiesett jelentkezők listájának frissítése
+    @PutMapping("/{taskId}/eliminate-applicants")
+    public ResponseEntity<Task> eliminateApplicants(@PathVariable Long taskId, @RequestBody List<String> eliminatedUsernames) {
+        return taskRepository.findById(taskId)
+                .map(task -> {
+                    // Átadjuk az új listát a Task entitásnak
+                    task.setEliminatedApplicants(eliminatedUsernames);
+                    Task savedTask = taskRepository.save(task);
+                    return ResponseEntity.ok(savedTask);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
 
