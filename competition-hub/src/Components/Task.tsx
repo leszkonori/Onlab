@@ -44,38 +44,38 @@ export default function Task({
   const isAnyReviewEditing = editingReviewId !== null;
 
   // ÉRTESÍTÉS FRISSÍTŐ EFFECT
-    useEffect(() => {
-        // 1. Task Creator View (Új Application-ök eltüntetése)
-        if (editable) { 
-            async function touchCreatorView() {
-                try {
-                    await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
-                        method: 'PUT',
-                    });
-                } catch (error) {
-                    console.error("Error touching creator view:", error);
-                }
-            }
-            touchCreatorView();
+  useEffect(() => {
+    // 1. Task Creator View (Új Application-ök eltüntetése)
+    if (editable) {
+      async function touchCreatorView() {
+        try {
+          await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
+            method: 'PUT',
+          });
+        } catch (error) {
+          console.error("Error touching creator view:", error);
         }
-        
-        // 2. Applicant View (Új Review-k eltüntetése)
-        // Ha NEM a Task creator nézi (editable: false), és be van jelentkezve, frissítjük a Review nézettséget.
-        if (!editable && user?.username) {
-            async function touchApplicantReviewView() {
-                try {
-                    // Meghívjuk az új ApplicationController-beli endpointot
-                    await fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
-                        method: 'PUT',
-                    });
-                } catch (error) {
-                    console.error("Error touching applicant review view:", error);
-                }
-            }
-            touchApplicantReviewView();
-        }
+      }
+      touchCreatorView();
+    }
 
-    }, [id, editable, user?.username]); // user.username függőség kell!
+    // 2. Applicant View (Új Review-k eltüntetése)
+    // Ha NEM a Task creator nézi (editable: false), és be van jelentkezve, frissítjük a Review nézettséget.
+    if (!editable && user?.username) {
+      async function touchApplicantReviewView() {
+        try {
+          // Meghívjuk az új ApplicationController-beli endpointot
+          await fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
+            method: 'PUT',
+          });
+        } catch (error) {
+          console.error("Error touching applicant review view:", error);
+        }
+      }
+      touchApplicantReviewView();
+    }
+
+  }, [id, editable, user?.username]); // user.username függőség kell!
 
 
   async function uploadToRound(roundId: number) {
@@ -101,7 +101,7 @@ export default function Task({
       const result = await response.text();
       alert(result);
       window.location.reload();
-      
+
     } catch (e) {
       console.error('Upload error:', e);
       alert('Upload failed.');
@@ -162,7 +162,7 @@ export default function Task({
     .map((r) => ({ ...r, parsed: parseLocalDate(r.deadline as string) }))
     .filter((r) => r.parsed.getTime() >= today.getTime())
     .sort((a, b) => a.parsed.getTime() - b.parsed.getTime());
-  const activeRound = upcomingRounds.length > 0 ? upcomingRounds[0] : null;
+  const activeRound = (roundsValue || []).find(r => (r as any).isActive) || null;
 
   async function handleSave() {
     try {
@@ -293,6 +293,28 @@ export default function Task({
     );
   };
 
+  function isBeforeToday(dateStr: string) {
+    const d = new Date(dateStr);
+    const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate()); // 00:00 helyi idő
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return dd.getTime() < today.getTime();
+  }
+
+  async function activateNextRound() {
+    const res = await fetch(`http://localhost:8081/api/tasks/${id}/activate-next`, {
+      method: 'PUT',
+    });
+    if (res.ok) {
+      alert('Next round activated.');
+      if (onSave) onSave();
+      // vagy window.location.reload();
+    } else {
+      const txt = await res.text();
+      alert('Cannot activate next round: ' + txt);
+    }
+  }
+
   return (
     <div className="task-container">
       <div className="task-grid">
@@ -392,7 +414,7 @@ export default function Task({
                           )}
                         </p>
                       </div>
-                      {!editable && activeRound && round.id === activeRound.id && !hasAppliedToThisRound && (
+                      {!editable && (round as any).isActive && !hasAppliedToThisRound && (
                         <div className="upload-section">
                           <label htmlFor={`fileInput-${round.id}`} className="custom-button">
                             Choose a file...
@@ -583,6 +605,16 @@ export default function Task({
               <button className="custom-button" onClick={() => setEditing(false)}>
                 Cancel
               </button>
+            </div>
+          )}
+          {editable && activeRound && (
+            <div className="buttons-container">
+              {/* csak ha lejárt */}
+              {isBeforeToday(activeRound.deadline as string) && (
+                <button className="custom-button" onClick={activateNextRound}>
+                  Activate next round
+                </button>
+              )}
             </div>
           )}
         </>

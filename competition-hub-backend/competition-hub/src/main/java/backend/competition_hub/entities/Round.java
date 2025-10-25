@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +28,11 @@ public class Round {
     @Column(nullable = false)
     private LocalDate deadline;
 
+    @Column(nullable = false)
+    private Boolean isActive = false;
+
     @OneToMany(mappedBy = "round")
     @JsonIgnore
     private List<Application> applications;
+
 }

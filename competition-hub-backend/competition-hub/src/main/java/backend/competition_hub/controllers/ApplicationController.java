@@ -87,6 +87,11 @@ public class ApplicationController {
             if (targetRound.getDeadline().isBefore(LocalDate.now())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("A kiválasztott forduló beküldési határideje lejárt.");
             }
+
+            if (!targetRound.getIsActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Csak az aktív fordulóba lehet beküldeni.");
+            }
         }
 
         try {
@@ -153,6 +158,11 @@ public class ApplicationController {
 
             if (round == null) {
                 return ResponseEntity.badRequest().body("Round not found in this Task.");
+            }
+
+            if (!round.getIsActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Csak az aktív fordulóba lehet beküldeni.");
             }
 
             // Application entitás létrehozása és mentése
