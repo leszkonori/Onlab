@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -42,39 +43,77 @@ public class ApplicationController {
         this.taskRepository = taskRepository;
     }
 
+    // MÓDOSÍTOTT VÉGPONT: Beküldés (hozzáadva a roundId, eliminációs és határidő ellenőrzés)
     @PostMapping("/{taskId}")
-    public ResponseEntity<String> handleFileUpload(@PathVariable Long taskId,
-                                                   @RequestParam("file") MultipartFile file,
-                                                   @RequestParam("keycloakUserId") String keycloakUserId,
-                                                   @RequestParam("keycloakUserName") String keycloakUserName) {
+    public ResponseEntity<String> handleFileUpload(
+            @PathVariable Long taskId,
+            @RequestParam("file") MultipartFile file,
+            // ÚJ: Opcionális roundId
+            @RequestParam(value = "roundId", required = false) Long roundId,
+            @RequestParam("keycloakUserId") String keycloakUserId,
+            @RequestParam("keycloakUserName") String keycloakUserName) {
+
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("No file uploaded.");
         }
 
+        // Feladat lekérése az ID alapján
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task == null) {
+            return ResponseEntity.badRequest().body("Task not found.");
+        }
+
+        // 1. ELLENŐRZÉS: Kiesett-e a felhasználó?
+        if (task.getEliminatedApplicants() != null && task.getEliminatedApplicants().contains(keycloakUserName)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ezt a felhasználót a Task kiírója kizárta/elutasította a versenyből.");
+        }
+
+        Round targetRound = null;
+        if (roundId != null) {
+            // 2. ELLENŐRZÉS: Round keresése a Task.rounds listában (Task entitáson keresztül)
+            if (task.getRounds() == null) {
+                return ResponseEntity.badRequest().body("Round not found in this Task.");
+            }
+            targetRound = task.getRounds().stream()
+                    .filter(r -> r.getId().equals(roundId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (targetRound == null) {
+                return ResponseEntity.badRequest().body("Round not found in this Task.");
+            }
+
+            // 3. ELLENŐRZÉS: Határidő lejárt-e?
+            if (targetRound.getDeadline().isBefore(LocalDate.now())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("A kiválasztott forduló beküldési határideje lejárt.");
+            }
+
+            if (!targetRound.getIsActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Csak az aktív fordulóba lehet beküldeni.");
+            }
+        }
+
         try {
-            // Célkönyvtár létrehozása, ha nem létezik
+            // ... (Fájl mentési logika változatlan) ...
             Path uploadPath = Paths.get(UPLOAD_DIR + taskId);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Fájl mentése
-            Path filePath = uploadPath.resolve(file.getOriginalFilename());
+            // Fájl mentése (javasolt a keycloak username bevonása a fájlnévbe a duplikáció elkerülése érdekében)
+            String filename = keycloakUserName + (roundId != null ? "_R" + roundId : "") + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(filename);
             file.transferTo(filePath.toFile());
-
-            // Feladat lekérése az ID alapján
-            Task task = taskRepository.findById(taskId).orElse(null);
-            if (task == null) {
-                return ResponseEntity.badRequest().body("Task not found.");
-            }
 
             // Application entitás létrehozása és mentése
             Application application = new Application();
             application.setTask(task);
             application.setKeycloakUserId(keycloakUserId);
             application.setKeycloakUserName(keycloakUserName);
-            application.setFilePath(filePath.toString()); // Abszolút útvonal tárolása
+            application.setFilePath(filePath.toString());
             application.setApplicationDate(LocalDateTime.now());
+            application.setRound(targetRound); // Kapcsolás a Round-hoz (ha van)
             applicationRepository.save(application);
 
             return ResponseEntity.ok("File uploaded and application submitted successfully.");
@@ -121,6 +160,11 @@ public class ApplicationController {
                 return ResponseEntity.badRequest().body("Round not found in this Task.");
             }
 
+            if (!round.getIsActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Csak az aktív fordulóba lehet beküldeni.");
+            }
+
             // Application entitás létrehozása és mentése
             Application application = new Application();
             application.setRound(round);
@@ -163,15 +207,6 @@ public class ApplicationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
-//    @PutMapping("/{id}/review")
-//    public ResponseEntity<Application> updateReview(@PathVariable Long id, @RequestBody Map<String, String> body) {
-//        return applicationRepository.findById(id).map(app -> {
-//            app.setReview(body.get("review"));
-//            applicationRepository.save(app);
-//            return ResponseEntity.ok(app);
-//        }).orElse(ResponseEntity.notFound().build());
-//    }
 
     @PutMapping("/{id}/review")
     public ResponseEntity<Application> updateReview(

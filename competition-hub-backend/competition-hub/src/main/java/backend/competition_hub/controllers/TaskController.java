@@ -7,12 +7,15 @@ import backend.competition_hub.entities.Task;
 import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.RoundRepository;
 import backend.competition_hub.repositories.TaskRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -51,10 +54,16 @@ public class TaskController {
 
     @PostMapping
     public Task createTask(@RequestBody Task task) {
-        if (task.getRounds() != null) {
-            for (Round round : task.getRounds()) {
+        if (task.getRounds() != null && !task.getRounds().isEmpty()) {
+            // biztosítsuk a determinisztikus sorrendet (pl. határidő szerint)
+            task.getRounds().sort(Comparator.comparing(Round::getDeadline));
+            for (int i = 0; i < task.getRounds().size(); i++) {
+                Round round = task.getRounds().get(i);
                 round.setTask(task);
+                round.setIsActive(i == 0); // első aktív, a többi nem
             }
+            // Ha vannak roundok, a Task.applicationDeadline mindegy is (nálad amúgy is
+            // szinkronizálod a legrégebbi round-deadline-re @PrePersist/@PreUpdate-ben). :contentReference[oaicite:2]{index=2}
         }
         return taskRepository.save(task);
     }
@@ -117,5 +126,65 @@ public class TaskController {
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    // ÚJ VÉGPONT: Kiesett jelentkezők listájának frissítése
+    @PutMapping("/{taskId}/eliminate-applicants")
+    public ResponseEntity<Task> eliminateApplicants(@PathVariable Long taskId, @RequestBody List<String> eliminatedUsernames) {
+        return taskRepository.findById(taskId)
+                .map(task -> {
+                    // Átadjuk az új listát a Task entitásnak
+                    task.setEliminatedApplicants(eliminatedUsernames);
+                    Task savedTask = taskRepository.save(task);
+                    return ResponseEntity.ok(savedTask);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{taskId}/activate-next")
+    public ResponseEntity<Object> activateNextRound(@PathVariable Long taskId) {
+        return (ResponseEntity<Object>) taskRepository.findById(taskId).map(task -> {
+            // roundok betöltése a taskhoz (ha nem lenne)
+            List<Round> rounds = roundRepository.findByTaskId(taskId);
+            if (rounds == null || rounds.isEmpty()) {
+                return ResponseEntity.badRequest().body("No rounds for this task.");
+            }
+
+            // rendezzük deadline szerint
+            rounds.sort(Comparator.comparing(Round::getDeadline));
+
+            // aktuális aktív
+            int activeIdx = -1;
+            for (int i = 0; i < rounds.size(); i++) {
+                if (rounds.get(i).getIsActive()) {
+                    activeIdx = i;
+                    break;
+                }
+            }
+            if (activeIdx == -1) {
+                return ResponseEntity.badRequest().body("No active round to advance from.");
+            }
+
+            Round current = rounds.get(activeIdx);
+            // csak akkor engedjük a váltást, ha lejárt
+            if (current.getDeadline() != null && !current.getDeadline().isBefore(LocalDate.now())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Current active round hasn't reached its deadline yet.");
+            }
+
+            if (activeIdx == rounds.size() - 1) {
+                // nincs következő
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("No next round to activate.");
+            }
+
+            // Átváltás
+            current.setIsActive(false);
+            Round next = rounds.get(activeIdx + 1);
+            next.setIsActive(true);
+            roundRepository.save(current);
+            roundRepository.save(next);
+
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
 }
 

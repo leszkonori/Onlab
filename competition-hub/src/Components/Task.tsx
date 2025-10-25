@@ -33,6 +33,9 @@ export default function Task({
   const [applicationStates, setApplicationStates] = useState(applications || []);
   const { user } = useKeycloak();
 
+  const [eliminatedApplicants, setEliminatedApplicants] = useState<string[]>([]);
+  const [selectedToEliminate, setSelectedToEliminate] = useState<Set<string>>(new Set());
+
   const [selectedFiles, setSelectedFiles] = useState<{ [roundId: number]: File | null }>({});
   // Új state a review szerkesztéséhez
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
@@ -44,39 +47,52 @@ export default function Task({
   const isAnyReviewEditing = editingReviewId !== null;
 
   // ÉRTESÍTÉS FRISSÍTŐ EFFECT
-    useEffect(() => {
-        // 1. Task Creator View (Új Application-ök eltüntetése)
-        if (editable) { 
-            async function touchCreatorView() {
-                try {
-                    await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
-                        method: 'PUT',
-                    });
-                } catch (error) {
-                    console.error("Error touching creator view:", error);
-                }
-            }
-            touchCreatorView();
+  useEffect(() => {
+    // 1. Task Creator View (Új Application-ök eltüntetése)
+    if (editable) {
+      async function touchCreatorView() {
+        try {
+          await fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, {
+            method: 'PUT',
+          });
+        } catch (error) {
+          console.error("Error touching creator view:", error);
         }
-        
-        // 2. Applicant View (Új Review-k eltüntetése)
-        // Ha NEM a Task creator nézi (editable: false), és be van jelentkezve, frissítjük a Review nézettséget.
-        if (!editable && user?.username) {
-            async function touchApplicantReviewView() {
-                try {
-                    // Meghívjuk az új ApplicationController-beli endpointot
-                    await fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
-                        method: 'PUT',
-                    });
-                } catch (error) {
-                    console.error("Error touching applicant review view:", error);
-                }
-            }
-            touchApplicantReviewView();
+      }
+      touchCreatorView();
+    }
+
+    // 2. Applicant View (Új Review-k eltüntetése)
+    // Ha NEM a Task creator nézi (editable: false), és be van jelentkezve, frissítjük a Review nézettséget.
+    if (!editable && user?.username) {
+      async function touchApplicantReviewView() {
+        try {
+          // Meghívjuk az új ApplicationController-beli endpointot
+          await fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
+            method: 'PUT',
+          });
+        } catch (error) {
+          console.error("Error touching applicant review view:", error);
         }
+      }
+      touchApplicantReviewView();
+    }
 
-    }, [id, editable, user?.username]); // user.username függőség kell!
+  }, [id, editable, user?.username]); // user.username függőség kell!
 
+  useEffect(() => {
+    async function loadEliminated() {
+      try {
+        const res = await fetch(`http://localhost:8081/api/tasks/${id}`);
+        if (!res.ok) return;
+        const taskJson = await res.json();
+        setEliminatedApplicants(taskJson.eliminatedApplicants ?? []);
+      } catch (e) {
+        console.error("Failed to load eliminated applicants", e);
+      }
+    }
+    loadEliminated();
+  }, [id]);
 
   async function uploadToRound(roundId: number) {
     if (!user) return;
@@ -101,7 +117,7 @@ export default function Task({
       const result = await response.text();
       alert(result);
       window.location.reload();
-      
+
     } catch (e) {
       console.error('Upload error:', e);
       alert('Upload failed.');
@@ -162,7 +178,56 @@ export default function Task({
     .map((r) => ({ ...r, parsed: parseLocalDate(r.deadline as string) }))
     .filter((r) => r.parsed.getTime() >= today.getTime())
     .sort((a, b) => a.parsed.getTime() - b.parsed.getTime());
-  const activeRound = upcomingRounds.length > 0 ? upcomingRounds[0] : null;
+  const activeRound = (roundsValue || []).find(r => (r as any).isActive) || null;
+
+  // Az aktív fordulóhoz beadott jelentkezések (ha van aktív forduló)
+  const activeRoundApplications = activeRound
+    ? (applicationStates || []).filter(app => app.round?.id === activeRound.id)
+    : [];
+
+  // Egyedi felhasználónév lista (ha esetleg több feltöltése lenne valakinek)
+  const activeRoundUsernames = Array.from(
+    new Set(activeRoundApplications.map(a => a.keycloakUserName))
+  ).sort();
+
+  const currentUserEliminated = user?.username
+    ? eliminatedApplicants.includes(user.username)
+    : false;
+
+  function toggleSelect(username: string) {
+    setSelectedToEliminate(prev => {
+      const next = new Set(prev);
+      if (next.has(username)) next.delete(username);
+      else next.add(username);
+      return next;
+    });
+  }
+
+  async function saveElimination() {
+    // A kérés szerint: az aktív forduló kijelölései MOSTANTÓL ne pályázhassanak tovább.
+    // Ez praktikusan: hozzáadjuk őket az eddigi eliminált listához (nem visszavonás).
+    const updated = Array.from(new Set([...eliminatedApplicants, ...Array.from(selectedToEliminate)]));
+
+    try {
+      const res = await fetch(`http://localhost:8081/api/tasks/${id}/eliminate-applicants`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        setEliminatedApplicants(updated);
+        setSelectedToEliminate(new Set());
+        alert('Eliminálás mentve. A kijelöltek a következő fordulókra már nem pályázhatnak.');
+        // ha akarsz, frissítheted a taskot is: onSave?.();
+      } else {
+        const msg = await res.text();
+        alert('Nem sikerült menteni: ' + msg);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Hálózati hiba az eliminálás mentése közben.');
+    }
+  }
 
   async function handleSave() {
     try {
@@ -293,6 +358,28 @@ export default function Task({
     );
   };
 
+  function isBeforeToday(dateStr: string) {
+    const d = new Date(dateStr);
+    const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate()); // 00:00 helyi idő
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return dd.getTime() < today.getTime();
+  }
+
+  async function activateNextRound() {
+    const res = await fetch(`http://localhost:8081/api/tasks/${id}/activate-next`, {
+      method: 'PUT',
+    });
+    if (res.ok) {
+      alert('Next round activated.');
+      if (onSave) onSave();
+      // vagy window.location.reload();
+    } else {
+      const txt = await res.text();
+      alert('Cannot activate next round: ' + txt);
+    }
+  }
+
   return (
     <div className="task-container">
       <div className="task-grid">
@@ -392,7 +479,7 @@ export default function Task({
                           )}
                         </p>
                       </div>
-                      {!editable && activeRound && round.id === activeRound.id && !hasAppliedToThisRound && (
+                      {!editable && (round as any).isActive && !hasAppliedToThisRound && !currentUserEliminated && (
                         <div className="upload-section">
                           <label htmlFor={`fileInput-${round.id}`} className="custom-button">
                             Choose a file...
@@ -554,6 +641,55 @@ export default function Task({
           </div>
         </div>
       )}
+      {editable && activeRound && (
+        <div className="rounds-container">
+          <h4>Active round applicants – elimination</h4>
+          {activeRoundUsernames.length === 0 ? (
+            <p>Nincs beadott pályázat az aktív fordulóra.</p>
+          ) : (
+            <>
+              <div className="add-round-container application">
+                {activeRoundUsernames.map((uname) => {
+                  const alreadyEliminated = eliminatedApplicants.includes(uname);
+                  return (
+                    <div key={uname} className="application-container">
+                      <div className="application-info">
+                        <strong>{uname}</strong>
+                        {alreadyEliminated && (
+                          <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.75 }}>
+                            (már eliminálva)
+                          </span>
+                        )}
+                      </div>
+                      <div className="application-buttons">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="checkbox"
+                            disabled={alreadyEliminated} // már elimináltat nem kell újra jelölni
+                            checked={selectedToEliminate.has(uname)}
+                            onChange={() => toggleSelect(uname)}
+                          />
+                          Eliminálandó
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="buttons-container" style={{ marginTop: 8 }}>
+                <button
+                  className="custom-button"
+                  onClick={saveElimination}
+                  disabled={selectedToEliminate.size === 0}
+                >
+                  Mentés (eliminálás)
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
 
       {editable && (
         <>
@@ -583,6 +719,16 @@ export default function Task({
               <button className="custom-button" onClick={() => setEditing(false)}>
                 Cancel
               </button>
+            </div>
+          )}
+          {editable && activeRound && (
+            <div className="buttons-container">
+              {/* csak ha lejárt */}
+              {isBeforeToday(activeRound.deadline as string) && (
+                <button className="custom-button" onClick={activateNextRound}>
+                  Activate next round
+                </button>
+              )}
             </div>
           )}
         </>
