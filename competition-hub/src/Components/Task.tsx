@@ -33,6 +33,9 @@ export default function Task({
   const [applicationStates, setApplicationStates] = useState(applications || []);
   const { user } = useKeycloak();
 
+  const [eliminatedApplicants, setEliminatedApplicants] = useState<string[]>([]);
+  const [selectedToEliminate, setSelectedToEliminate] = useState<Set<string>>(new Set());
+
   const [selectedFiles, setSelectedFiles] = useState<{ [roundId: number]: File | null }>({});
   // Új state a review szerkesztéséhez
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
@@ -77,6 +80,19 @@ export default function Task({
 
   }, [id, editable, user?.username]); // user.username függőség kell!
 
+  useEffect(() => {
+    async function loadEliminated() {
+      try {
+        const res = await fetch(`http://localhost:8081/api/tasks/${id}`);
+        if (!res.ok) return;
+        const taskJson = await res.json();
+        setEliminatedApplicants(taskJson.eliminatedApplicants ?? []);
+      } catch (e) {
+        console.error("Failed to load eliminated applicants", e);
+      }
+    }
+    loadEliminated();
+  }, [id]);
 
   async function uploadToRound(roundId: number) {
     if (!user) return;
@@ -163,6 +179,55 @@ export default function Task({
     .filter((r) => r.parsed.getTime() >= today.getTime())
     .sort((a, b) => a.parsed.getTime() - b.parsed.getTime());
   const activeRound = (roundsValue || []).find(r => (r as any).isActive) || null;
+
+  // Az aktív fordulóhoz beadott jelentkezések (ha van aktív forduló)
+  const activeRoundApplications = activeRound
+    ? (applicationStates || []).filter(app => app.round?.id === activeRound.id)
+    : [];
+
+  // Egyedi felhasználónév lista (ha esetleg több feltöltése lenne valakinek)
+  const activeRoundUsernames = Array.from(
+    new Set(activeRoundApplications.map(a => a.keycloakUserName))
+  ).sort();
+
+  const currentUserEliminated = user?.username
+    ? eliminatedApplicants.includes(user.username)
+    : false;
+
+  function toggleSelect(username: string) {
+    setSelectedToEliminate(prev => {
+      const next = new Set(prev);
+      if (next.has(username)) next.delete(username);
+      else next.add(username);
+      return next;
+    });
+  }
+
+  async function saveElimination() {
+    // A kérés szerint: az aktív forduló kijelölései MOSTANTÓL ne pályázhassanak tovább.
+    // Ez praktikusan: hozzáadjuk őket az eddigi eliminált listához (nem visszavonás).
+    const updated = Array.from(new Set([...eliminatedApplicants, ...Array.from(selectedToEliminate)]));
+
+    try {
+      const res = await fetch(`http://localhost:8081/api/tasks/${id}/eliminate-applicants`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        setEliminatedApplicants(updated);
+        setSelectedToEliminate(new Set());
+        alert('Eliminálás mentve. A kijelöltek a következő fordulókra már nem pályázhatnak.');
+        // ha akarsz, frissítheted a taskot is: onSave?.();
+      } else {
+        const msg = await res.text();
+        alert('Nem sikerült menteni: ' + msg);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Hálózati hiba az eliminálás mentése közben.');
+    }
+  }
 
   async function handleSave() {
     try {
@@ -414,7 +479,7 @@ export default function Task({
                           )}
                         </p>
                       </div>
-                      {!editable && (round as any).isActive && !hasAppliedToThisRound && (
+                      {!editable && (round as any).isActive && !hasAppliedToThisRound && !currentUserEliminated && (
                         <div className="upload-section">
                           <label htmlFor={`fileInput-${round.id}`} className="custom-button">
                             Choose a file...
@@ -576,6 +641,55 @@ export default function Task({
           </div>
         </div>
       )}
+      {editable && activeRound && (
+        <div className="rounds-container">
+          <h4>Active round applicants – elimination</h4>
+          {activeRoundUsernames.length === 0 ? (
+            <p>Nincs beadott pályázat az aktív fordulóra.</p>
+          ) : (
+            <>
+              <div className="add-round-container application">
+                {activeRoundUsernames.map((uname) => {
+                  const alreadyEliminated = eliminatedApplicants.includes(uname);
+                  return (
+                    <div key={uname} className="application-container">
+                      <div className="application-info">
+                        <strong>{uname}</strong>
+                        {alreadyEliminated && (
+                          <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.75 }}>
+                            (már eliminálva)
+                          </span>
+                        )}
+                      </div>
+                      <div className="application-buttons">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="checkbox"
+                            disabled={alreadyEliminated} // már elimináltat nem kell újra jelölni
+                            checked={selectedToEliminate.has(uname)}
+                            onChange={() => toggleSelect(uname)}
+                          />
+                          Eliminálandó
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="buttons-container" style={{ marginTop: 8 }}>
+                <button
+                  className="custom-button"
+                  onClick={saveElimination}
+                  disabled={selectedToEliminate.size === 0}
+                >
+                  Mentés (eliminálás)
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
 
       {editable && (
         <>
