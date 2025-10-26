@@ -1,0 +1,39 @@
+.add-round-container.application {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.round-container.application {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 10px;
+    width: fit-content;
+}
+.round-container.application.editing {
+    width: 100%;
+}
+
+.round-container.application {
+    margin-bottom: 0px;
+}
+/* Stílusok az eliminációs panelhez */
+.application-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%; /* vagy illeszd a szülőhöz */
+}
+
+.application-info {
+    display: flex;
+    align-items: center;
+}
+
+.application-buttons {
+    display: flex;
+    gap: 10px;
+}
