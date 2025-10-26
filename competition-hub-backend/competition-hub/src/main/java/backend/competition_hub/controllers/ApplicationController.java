@@ -2,6 +2,7 @@ package backend.competition_hub.controllers;
 
 import backend.competition_hub.EvaluationType;
 import backend.competition_hub.dtos.ApplicationNotificationDTO;
+import backend.competition_hub.dtos.EliminationNotificationDTO;
 import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
@@ -9,6 +10,7 @@ import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -316,6 +318,26 @@ public class ApplicationController {
 
         applicationRepository.saveAll(applications);
 
+        return ResponseEntity.ok().build();
+    }
+
+    // GET: eliminációs notik
+    @GetMapping("/elimination-notifications/{username}")
+    public ResponseEntity<List<ApplicationNotificationDTO>> getUnseenEliminations(@PathVariable String username) {
+        List<Object[]> rows = applicationRepository.getTasksWithUnseenElimination(username);
+        List<ApplicationNotificationDTO> notifications = rows.stream()
+                .map(r -> new ApplicationNotificationDTO(
+                        ((Number) r[0]).longValue(),   // taskId
+                        (String) r[1],                 // taskTitle
+                        ((Number) r[2]).longValue()))  // count (nálad a front ezt várja)
+                .toList();
+        return ResponseEntity.ok(notifications);
+    }
+
+    // PUT: amikor a user ránéz a taskra, tüntessük el a notit
+    @PutMapping("/tasks/{taskId}/touch-elimination-view/{username}")
+    public ResponseEntity<Object> touchEliminationView(@PathVariable Long taskId, @PathVariable String username) {
+        applicationRepository.markEliminationSeen(username, taskId);
         return ResponseEntity.ok().build();
     }
 }

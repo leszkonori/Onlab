@@ -47,6 +47,9 @@ public class Application {
     @Column(name = "review_created_at")
     private LocalDateTime reviewCreatedAt;
 
+    @Column(name = "eliminated_seen")
+    private Boolean eliminatedSeen;
+
     public Application() {}
 
     public Application(Task task, String keycloakUserId, String keycloakUserName, String filePath, LocalDateTime applicationDate) {
