@@ -61,12 +61,15 @@ export default function Task({
   // Creator/applicant jelző „megtekintve”
   useEffect(() => {
     if (editable) {
-      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: 'PUT' }).catch(() => {});
+      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: 'PUT' }).catch(() => { });
     }
     if (!editable && user?.username) {
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
         method: 'PUT',
-      }).catch(() => {});
+      }).catch(() => { });
+      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-elimination-view/${user.username}`, {
+        method: 'PUT',
+      }).catch(() => { });
     }
   }, [id, editable, user?.username]);
 
