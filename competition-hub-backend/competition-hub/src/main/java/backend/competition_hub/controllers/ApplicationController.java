@@ -266,6 +266,7 @@ public class ApplicationController {
 
             }
 
+            app.setReviewCreatedAt(LocalDateTime.now());
             applicationRepository.save(app);
             return ResponseEntity.ok(app);
         }).orElse(ResponseEntity.notFound().<Application>build());
@@ -275,6 +276,7 @@ public class ApplicationController {
     @GetMapping("/by-user/{keycloakUserId}")
     public ResponseEntity<List<Application>> getApplicationsByUser(@PathVariable String keycloakUserId) {
         List<Application> apps = applicationRepository.findByKeycloakUserId(keycloakUserId);
+
         return ResponseEntity.ok(apps);
     }
 

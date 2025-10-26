@@ -17,7 +17,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             "FROM Application a " +
             "WHERE a.keycloakUserName = :username " +
             "AND (a.reviewText IS NOT NULL OR a.reviewPoints IS NOT NULL) " +
-            "AND a.applicantLastViewedReviewAt IS NULL " +
+            "AND (a.applicantLastViewedReviewAt IS NULL OR a.applicantLastViewedReviewAt < a.reviewCreatedAt) " +
             "GROUP BY a.task.id, a.task.title " +
             "HAVING COUNT(a.id) > 0")
     List<Object[]> getTasksWithNewReviewCount(@Param("username") String username);
