@@ -11,6 +11,9 @@ export default function NewTask() {
     const [rounds, setRounds] = useState<RoundType[]>([]);
     const [evaluationType, setEvaluationType] = useState<EvaluationType>("TEXT");
 
+    const today = new Date();
+    const minDate = today.toISOString().split("T")[0];
+
     const handleAddRound = () => {
         setRounds([...rounds, { description: "", deadline: "" }]);
     };
@@ -19,7 +22,6 @@ export default function NewTask() {
         setRounds(rounds.map((round, i) =>
             i === index ? { ...round, [name]: value } : round
         ));
-        console.log(rounds);
     };
 
     const handleSubmit = () => {
@@ -80,6 +82,7 @@ export default function NewTask() {
                         <input
                             type="date"
                             value={deadline}
+                            min={minDate}
                             onChange={(e) => setDeadline(e.target.value)}
                         />
                     </>
@@ -109,6 +112,7 @@ export default function NewTask() {
                             <input
                                 type="date"
                                 value={round.deadline}
+                                min={minDate}
                                 onChange={(e) => handleRoundChange(index, "deadline", e.target.value)}
                             />
                         </div>
