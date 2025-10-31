@@ -177,6 +177,7 @@ public class TaskController {
 
             // Átváltás
             current.setIsActive(false);
+            current.setActivatedAt(Instant.now());
             Round next = rounds.get(activeIdx + 1);
             next.setIsActive(true);
             roundRepository.save(current);

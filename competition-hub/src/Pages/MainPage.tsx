@@ -9,7 +9,7 @@ interface Notification {
     taskId: number;
     taskTitle: string;
     newApplicationsCount: number;
-    type: 'NEW_APPLICATION' | 'NEW_REVIEW' | 'ELIMINATION'; // Kétféle értesítés megkülönböztetése
+    type: 'NEW_APPLICATION' | 'NEW_REVIEW' | 'ELIMINATION' | 'ROUND_ACTIVATED';
 }
 
 export default function MainPage() {
@@ -60,9 +60,16 @@ export default function MainPage() {
                 taskTitle: `${n.taskTitle} (Eliminálva)`,
                 newApplicationsCount: n.newApplicationsCount ?? 1
             }));
+            const roundRes = await fetch(`http://localhost:8081/api/applications/round-activation-notifications/${creatorIdentifier}`);
+            const roundData: Notification[] = (await roundRes.json()).map((n: any) => ({
+                taskId: n.taskId,
+                taskTitle: `${n.taskTitle} (Új forduló nyílt)`,
+                newApplicationsCount: n.newApplicationsCount ?? 1,
+                type: 'ROUND_ACTIVATED' as const,
+            }));
 
             // Összefűzés és rendezés Task ID szerint
-            const mergedNotifications = [...creatorData, ...applicantData, ...elimData];
+            const mergedNotifications = [...creatorData, ...applicantData, ...elimData, ...roundData];
             setNotifications(mergedNotifications);
 
         } catch (error) {
@@ -87,14 +94,15 @@ export default function MainPage() {
     const handleTaskClick = async (taskId: number, type?: Notification['type']) => {
         setIsDropdownOpen(false);
 
-        if (type === 'ELIMINATION' && creatorIdentifier) {
+        if (creatorIdentifier) {
             try {
-                await fetch(`http://localhost:8081/api/applications/tasks/${taskId}/touch-elimination-view/${creatorIdentifier}`, {
-                    method: 'PUT'
-                });
-            } catch (e) {
-                console.warn('Elimination seen jelzés nem sikerült.', e);
-                // ettől még navigálunk tovább
+                if (type === 'ELIMINATION') {
+                    await fetch(`http://localhost:8081/api/applications/tasks/${taskId}/touch-elimination-view/${creatorIdentifier}`, { method: 'PUT' });
+                } else if (type === 'ROUND_ACTIVATED') {
+                    await fetch(`http://localhost:8081/api/applications/tasks/${taskId}/touch-round-activation-view/${creatorIdentifier}`, { method: 'PUT' });
+                }
+            } catch (e){
+                console.warn('Elimination seen jelzés vagy round-activated seen nem sikerült.', e);
             }
         }
 

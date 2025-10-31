@@ -70,6 +70,8 @@ export default function Task({
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-elimination-view/${user.username}`, {
         method: 'PUT',
       }).catch(() => { });
+      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-round-activation-view/${user.username}`, { method: 'PUT' })
+        .catch(() => { });
     }
   }, [id, editable, user?.username]);
 

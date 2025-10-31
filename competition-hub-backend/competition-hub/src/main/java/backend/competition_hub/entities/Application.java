@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -49,6 +50,8 @@ public class Application {
 
     @Column(name = "eliminated_seen")
     private Boolean eliminatedSeen;
+
+    private Instant lastRoundActivationViewAt;
 
     public Application() {}
 
