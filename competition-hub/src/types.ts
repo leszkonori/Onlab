@@ -4,6 +4,7 @@ export type RoundType = {
     deadline: string;
     task: TaskType;
     applications?: ApplicationType[];
+    isActive: boolean;
 }
 
 export type TaskType = {
