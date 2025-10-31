@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class Round {
 
     @Column(nullable = false)
     private Boolean isActive = false;
+
+    private Instant activatedAt;
 
     @OneToMany(mappedBy = "round")
     @JsonIgnore

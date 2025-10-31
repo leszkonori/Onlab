@@ -2,7 +2,7 @@ package backend.competition_hub.controllers;
 
 import backend.competition_hub.EvaluationType;
 import backend.competition_hub.dtos.ApplicationNotificationDTO;
-import backend.competition_hub.dtos.EliminationNotificationDTO;
+import backend.competition_hub.dtos.RoundActivationNotificationDTO;
 import backend.competition_hub.entities.Application;
 import backend.competition_hub.entities.Round;
 import backend.competition_hub.entities.Task;
@@ -10,7 +10,6 @@ import backend.competition_hub.repositories.ApplicationRepository;
 import backend.competition_hub.repositories.TaskRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,11 +18,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @RestController
@@ -340,4 +338,60 @@ public class ApplicationController {
         applicationRepository.markEliminationSeen(username, taskId);
         return ResponseEntity.ok().build();
     }
+
+    // ApplicationService.java
+    public List<RoundActivationNotificationDTO> listRoundActivationNotifications(String username) {
+        List<Application> apps = applicationRepository.findByKeycloakUserName(username);
+        Instant epoch = Instant.EPOCH;
+
+        return apps.stream()
+                // 1) zárd ki az elimináltakat
+                .filter(app -> {
+                    Task t = app.getTask();
+                    // igazítsd a tényleges meződhöz: pl. t.getEliminatedApplicants().contains(username)
+                    return !t.getEliminatedApplicants().contains(username);
+                })
+                // 2) számold a max activatedAt-et
+                .map(app -> {
+                    Task t = app.getTask();
+                    Instant lastActivated = t.getRounds().stream()
+                            .map(Round::getActivatedAt)
+                            .filter(Objects::nonNull)
+                            .max(Comparator.naturalOrder())
+                            .orElse(null);
+
+                    if (lastActivated == null) return null; // még nem volt aktiválva semmi
+
+                    Instant lastSeen = Optional.ofNullable(app.getLastRoundActivationViewAt()).orElse(epoch);
+
+                    if (lastActivated.isAfter(lastSeen)) {
+                        return new RoundActivationNotificationDTO(t.getId(), t.getTitle());
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    // ApplicationController.java (vagy ahol az applicant-notik vannak)
+    @GetMapping("/round-activation-notifications/{username}")
+    public List<RoundActivationNotificationDTO> roundActivationNotifs(@PathVariable String username) {
+        return listRoundActivationNotifications(username);
+    }
+
+    // ApplicationController.java
+    @PutMapping("/tasks/{taskId}/touch-round-activation-view/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void touchRoundActivationView(@PathVariable Long taskId, @PathVariable String username) {
+        List<Application> applications = applicationRepository.findByTaskIdAndKeycloakUserName(taskId, username);
+        if (applications.isEmpty()) {
+            return;
+        }
+
+        applications.forEach(app -> {
+            app.setLastRoundActivationViewAt(Instant.now());
+        });
+        applicationRepository.saveAll(applications);
+    }
+
 }
