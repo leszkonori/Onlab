@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css'
 import MainPage from "./Pages/MainPage";
-import ActiveTasks from "./Pages/ActiveTasks";
 import Apply from "./Pages/Apply";
 import Profile from "./Pages/Profile";
 import NewTaskPage from "./Pages/NewTaskPage";

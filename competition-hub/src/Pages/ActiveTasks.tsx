@@ -36,24 +36,15 @@ export default function ActiveTasks() {
     }, [tasks]);
 
     return (
-        <>
-            <ul className="task-list-container">
-                {activeVisibleTasks.map((task) => (
-                    <ListCard
-                        key={task.id}
-                        title={task.title}
-                        descr={task.description}
-                        link={`/apply/${task.id}`}
-                    />
-                ))}
-            </ul>
-            {hasRole('admin') &&
-                <div>
-                    <button className="custom-button">
-                        <Link to="/new-task">Create a new task</Link>
-                    </button>
-                </div>
-            }
-        </>
+        <ul className="task-list-container">
+            {activeVisibleTasks.map((task) => (
+                <ListCard
+                    key={task.id}
+                    title={task.title}
+                    descr={task.description}
+                    link={`/apply/${task.id}`}
+                />
+            ))}
+        </ul>
     );
 }

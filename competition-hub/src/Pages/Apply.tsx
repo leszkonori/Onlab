@@ -5,6 +5,7 @@ import './Apply.css';
 import { useEffect, useState } from "react";
 import { ApplicationType, RoundType, TaskType } from "../types";
 import { useKeycloak } from "../KeycloakProvider";
+import AppHeader from "../Components/AppHeader";
 
 export default function Apply() {
   const { id } = useParams<{ id: string }>();
@@ -132,21 +133,7 @@ export default function Apply() {
 
   return (
     <div className="page-container">
-      <div className="menu-container">
-        <button className="custom-button">
-          <Link to="/">Main Page</Link>
-        </button>
-        <button className="custom-button">
-          <Link to="/profile">Profile</Link>
-        </button>
-        <button className="custom-button" onClick={logout}>
-          Logout
-        </button>
-      </div>
-
-      <div className="page-title-container">
-        <h2 className="page-title">{task?.title}</h2>
-      </div>
+      <AppHeader />
 
       {task && (
         <Task

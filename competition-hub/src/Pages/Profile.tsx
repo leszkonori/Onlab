@@ -5,6 +5,7 @@ import '../styles/Profile.css';
 import { useEffect, useState } from "react";
 import { ApplicationType, TaskType } from "../types";
 import ListCard from "../Components/ListCard";
+import AppHeader from "../Components/AppHeader";
 
 export default function Profile() {
     const { user, isAuthenticated, hasRole, logout } = useKeycloak();
@@ -47,15 +48,7 @@ export default function Profile() {
 
     return (
         <div className="page-container">
-            <div className="menu-container">
-                <button className="custom-button">
-                    <Link to="/">Main Page</Link>
-                </button>
-                <button className="custom-button">
-                    <Link to="/profile">Profile</Link>
-                </button>
-                <button className="custom-button" onClick={logout}>Logout</button>
-            </div>
+            <AppHeader />
             <div className="page-title-container">
                 <h2 className="page-title">Profile</h2>
             </div>
