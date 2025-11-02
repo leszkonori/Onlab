@@ -1,27 +1,3 @@
-/* ÚJ FEJLÉC STÍLUS */
-.app-header {
-    width: 100%;
-    max-width: 1440px;
-    margin: 0 auto; /* Középre igazítás */
-    
-    display: flex;
-    justify-content: space-between; /* Elosztja a főcímet és a menüt két szélre */
-    align-items: center; /* Vertikálisan középre igazít */
-    
-    padding: 0px 40px; /* Belső margó, illeszkedve a kártyalistához */
-    background-color: #f7f7f7; /* Világos háttér a fejlécnek */
-    border-bottom: 2px solid #ddd; /* Elválasztó vonal */
-}
-
-/* Régi main-title-container stílusok frissítése a h1-re */
-.main-title {
-    font-size: 32px; /* Kisebb fontméret, hogy elférjen a fejlécben */
-    font-weight: 700;
-    color: var(--dark-blue, #0056b3); /* Használjuk a változót, vagy az alapértelmezettet */
-    text-align: left; /* Balra igazítjuk */
-    margin: 0; /* Eltávolítjuk a régi vertikális margókat */
-}
-
 /* A menü gombokat tartalmazó konténer (ez most nav elem) */
 .menu-container {
     display: flex;
@@ -33,19 +9,19 @@
 .page-title-container {
     max-width: 1440px;
     width: 100%;
-    /* Térköz a fejléc és a tartalom között */
-    margin: 30px auto 15px auto; /* Kisebb alsó margó, mert a cím is szubtilisebb */
+    margin: 30px auto 15px auto;
     padding: 0px 40px; 
     justify-content: flex-start;
 }
 
 /* A cím stílusa */
 .page-title {
-    font-size: 32px; /* Alapértelmezett alcím méret */
+    font-size: 32px;
     font-weight: 600; 
-    color: #555; /* Közepesen sötét szín, a lágy kiemelésért */
-    text-transform: uppercase; /* Nagybetűs stílus (opcionális, de alcímeknél gyakori) */
-    letter-spacing: 1px; /* Enyhe betűköz a tisztább hatásért */
+    /* SZÍN VÁLTOZTATÁSA SÖTÉT TÜRKIZRE */
+    color: #008080; /* Dark Teal Primary Color */
+    text-transform: uppercase;
+    letter-spacing: 1px;
     margin: 0;
 }
 
