@@ -8,35 +8,30 @@
 /* Hero Section */
 .profile-hero {
   background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-  padding: 48px 40px;
+  padding: 60px 40px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .profile-hero-content {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .profile-hero-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-radius: 16px;
+  border-radius: 20px;
   color: white;
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
   flex-shrink: 0;
-}
-
-.profile-hero-icon svg {
-  width: 28px;
-  height: 28px;
 }
 
 .profile-hero-text {
@@ -44,16 +39,16 @@
 }
 
 .profile-hero-title {
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   letter-spacing: -0.5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .profile-hero-username {
-  font-size: 16px;
+  font-size: 20px;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
   font-weight: 500;
@@ -61,22 +56,23 @@
 
 /* Profile Container */
 .profile-container {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 48px 40px;
+  padding: 40px;
 }
 
 .profile-content {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 32px;
 }
 
 /* Stats Cards */
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
+  margin-bottom: 8px;
 }
 
 .stat-card {
@@ -141,23 +137,18 @@
 /* Profile Sections */
 .profile-section {
   background: white;
-  border-radius: 20px;
-  padding: 40px;
+  border-radius: 16px;
+  padding: 32px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease;
-}
-
-.profile-section:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-  padding-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
   border-bottom: 2px solid #f1f5f9;
 }
 
@@ -165,15 +156,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  border-radius: 12px;
+  border-radius: 10px;
   color: #3b82f6;
 }
 
 .section-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: #1a1f3a;
   margin: 0;
@@ -186,8 +177,8 @@
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
 }
 
 .task-list-item {
@@ -267,71 +258,58 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .profile-container {
-    padding: 40px 32px;
+    padding: 32px 24px;
   }
 
   .profile-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .task-list {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
   .profile-hero {
-    padding: 32px 20px;
+    padding: 40px 20px;
   }
 
   .profile-hero-content {
+    flex-direction: column;
+    text-align: center;
     gap: 16px;
   }
 
   .profile-hero-icon {
-    width: 56px;
-    height: 56px;
-  }
-
-  .profile-hero-icon svg {
-    width: 24px;
-    height: 24px;
+    width: 64px;
+    height: 64px;
   }
 
   .profile-hero-title {
-    font-size: 26px;
+    font-size: 32px;
   }
 
   .profile-hero-username {
-    font-size: 15px;
+    font-size: 18px;
   }
 
   .profile-container {
-    padding: 32px 20px;
+    padding: 24px 16px;
   }
 
   .profile-section {
-    padding: 28px 24px;
+    padding: 24px 20px;
   }
 
   .section-header {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-  }
-
-  .section-icon {
-    width: 40px;
-    height: 40px;
   }
 
   .section-title {
-    font-size: 19px;
+    font-size: 20px;
   }
 
   .task-list {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
 
   .stat-card {
