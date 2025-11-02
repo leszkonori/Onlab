@@ -55,7 +55,11 @@
     color: #555;
     margin-bottom: 15px;
     /* Kitölti a rendelkezésre álló helyet a gomb előtt */
-    flex-grow: 1; 
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    overflow: hidden;
 }
 
 /* A gombot tartalmazó konténer stílusa */

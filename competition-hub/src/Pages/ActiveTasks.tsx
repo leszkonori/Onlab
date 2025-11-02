@@ -6,7 +6,6 @@ import { TaskType } from "../types";
 import './ActiveTasks.css'
 
 export default function ActiveTasks() {
-    const { user, isAuthenticated, hasRole, logout } = useKeycloak();
 
     const [tasks, setTasks] = useState<TaskType[]>([]);
 
@@ -31,7 +30,7 @@ export default function ActiveTasks() {
             const firstRound = task.rounds && task.rounds[0];
             const firstRoundActive = firstRound ? firstRound.isActive === true : false;
 
-            return deadlineOk && firstRoundActive;
+            return deadlineOk && firstRoundActive || deadlineOk && !firstRound;
         });
     }, [tasks]);
 

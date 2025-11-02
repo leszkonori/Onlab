@@ -33,18 +33,21 @@
 .page-title-container {
     max-width: 1440px;
     width: 100%;
-    margin: 20px auto 10px auto; /* Térköz a fejléc és a tartalom között */
-    padding: 0px 40px; /* Illeszkedik a fejléc padding-jéhez */
+    /* Térköz a fejléc és a tartalom között */
+    margin: 30px auto 15px auto; /* Kisebb alsó margó, mert a cím is szubtilisebb */
+    padding: 0px 40px; 
+    justify-content: flex-start;
 }
 
+/* A cím stílusa */
 .page-title {
-    font-size: 28px;
-    font-weight: 600;
-    color: #333;
+    font-size: 32px; /* Alapértelmezett alcím méret */
+    font-weight: 600; 
+    color: #555; /* Közepesen sötét szín, a lágy kiemelésért */
+    text-transform: uppercase; /* Nagybetűs stílus (opcionális, de alcímeknél gyakori) */
+    letter-spacing: 1px; /* Enyhe betűköz a tisztább hatásért */
     margin: 0;
 }
-
-/* MainPage.css kiegészítés */
 
 .notification-dropdown-container {
     position: relative;

@@ -157,7 +157,7 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
                 )}
                 {hasRole('admin') &&
                     <button className="custom-button create-task-button">
-                        <Link to="/new-task">Create a new task</Link>
+                        <Link to="/new-task">+ Create a new task</Link>
                     </button>
                 }
                 <button className="custom-button">
