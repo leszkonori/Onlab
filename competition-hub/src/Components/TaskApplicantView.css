@@ -1,0 +1,404 @@
+/* Applicant Rounds Grid */
+.applicant-rounds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Applicant Round Card */
+.applicant-round-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.applicant-round-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Round Header Section */
+.round-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.applied-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+}
+
+.applied-badge svg {
+  flex-shrink: 0;
+}
+
+/* Updated to use grid layout like Task component */
+.round-info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.round-info-grid .info-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.round-info-grid .info-label svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.round-info-grid .info-value {
+  font-size: 15px;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.6;
+  align-self: center;
+}
+
+.review-points-badge {
+  font-weight: 600;
+  color: #10b981;
+}
+
+/* Round Actions */
+.round-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Upload section wrapper - simple container with top margin */
+.upload-section-wrapper {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f3f4f6;
+}
+
+/* Upload styles matching Apply.css exactly */
+.applicant-round-card .upload-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.applicant-round-card .upload-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 14px;
+  color: white;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+}
+
+.applicant-round-card .upload-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.applicant-round-card .upload-subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.applicant-round-card .upload-area {
+  margin-bottom: 24px;
+}
+
+.applicant-round-card .file-input-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.applicant-round-card .file-input-label:hover {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.applicant-round-card .file-input-label svg {
+  color: #3b82f6;
+  margin-bottom: 16px;
+}
+
+.applicant-round-card .file-input-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.applicant-round-card .file-input-hint {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.applicant-round-card .submit-application-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.applicant-round-card .submit-application-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.applicant-round-card .submit-application-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.applicant-round-card .submit-application-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Application Status Section */
+.application-status-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f3f4f6;
+}
+
+.application-status-section .status-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.application-status-section .status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.application-status-section .status-icon.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.application-status-section .status-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.application-status-section .status-subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.application-status-section .status-actions {
+  margin-bottom: 24px;
+}
+
+.application-status-section .download-link {
+  text-decoration: none;
+}
+
+.application-status-section .download-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.application-status-section .download-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.application-status-section .review-section {
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #bae6fd;
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+.application-status-section .review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.application-status-section .review-header svg {
+  color: #0284c7;
+}
+
+.application-status-section .review-header h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0c4a6e;
+  margin: 0;
+}
+
+.application-status-section .review-text {
+  font-size: 15px;
+  color: #0c4a6e;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.application-status-section .review-points {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.application-status-section .points-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0284c7;
+}
+
+.application-status-section .points-max {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .applicant-rounds-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .round-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .round-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .round-info-grid .info-label {
+    font-size: 14px;
+  }
+
+  /* Updated responsive styles for new upload classes */
+  .applicant-round-card .upload-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .applicant-round-card .upload-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .applicant-round-card .upload-title {
+    font-size: 20px;
+  }
+
+  .applicant-round-card .file-input-label {
+    padding: 32px 20px;
+  }
+
+  .round-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .round-actions .action-button,
+  .download-link {
+    width: 100%;
+  }
+
+  .round-actions .action-button {
+    justify-content: center;
+  }
+
+  .application-status-section .status-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .application-status-section .status-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .application-status-section .status-title {
+    font-size: 20px;
+  }
+
+  .application-status-section .download-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
