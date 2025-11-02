@@ -1,20 +1,29 @@
-.main-title-container {
+/* A menü gombokat tartalmazó konténer (ez most nav elem) */
+.menu-container {
+    display: flex;
+    gap: 15px; /* Térköz a gombok között */
+    align-items: center;
+}
+
+/* A lap címe (Active tasks) konténere (a fejléc alatt) */
+.page-title-container {
     max-width: 1440px;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 30px 0px;
+    margin: 30px auto 15px auto;
+    padding: 0px 40px; 
+    justify-content: flex-start;
 }
 
-.main-title {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--dark-blue);
-    text-align: center;
+/* A cím stílusa */
+.page-title {
+    font-size: 32px;
+    font-weight: 600; 
+    /* SZÍN VÁLTOZTATÁSA SÖTÉT TÜRKIZRE */
+    color: #008080; /* Dark Teal Primary Color */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
 }
-
-/* MainPage.css kiegészítés */
 
 .notification-dropdown-container {
     position: relative;

@@ -6,7 +6,6 @@ import { TaskType } from "../types";
 import './ActiveTasks.css'
 
 export default function ActiveTasks() {
-    const { user, isAuthenticated, hasRole, logout } = useKeycloak();
 
     const [tasks, setTasks] = useState<TaskType[]>([]);
 
@@ -31,29 +30,20 @@ export default function ActiveTasks() {
             const firstRound = task.rounds && task.rounds[0];
             const firstRoundActive = firstRound ? firstRound.isActive === true : false;
 
-            return deadlineOk && firstRoundActive;
+            return deadlineOk && firstRoundActive || deadlineOk && !firstRound;
         });
     }, [tasks]);
 
     return (
-        <>
-            <ul className="task-list-container">
-                {activeVisibleTasks.map((task) => (
-                    <ListCard
-                        key={task.id}
-                        title={task.title}
-                        descr={task.description}
-                        link={`/apply/${task.id}`}
-                    />
-                ))}
-            </ul>
-            {hasRole('admin') &&
-                <div>
-                    <button className="custom-button">
-                        <Link to="/new-task">Create a new task</Link>
-                    </button>
-                </div>
-            }
-        </>
+        <ul className="task-list-container">
+            {activeVisibleTasks.map((task) => (
+                <ListCard
+                    key={task.id}
+                    title={task.title}
+                    descr={task.description}
+                    link={`/apply/${task.id}`}
+                />
+            ))}
+        </ul>
     );
 }

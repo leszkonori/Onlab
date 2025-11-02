@@ -1,4 +1,4 @@
-.card-container {
+/* .card-container {
     max-width: 800px;
     width: 100%;
     display: flex;
@@ -13,4 +13,58 @@
 }
 .card-container:hover {
     transform: scale(1.05);
+}
+ */
+
+ .card-container {
+    /* Eltávolítjuk a max-width-et, hogy a Grid cella szélességét vegye fel */
+    width: 100%;
+    
+    /* === Kártya struktúra === */
+    display: flex;
+    flex-direction: column; /* Vertikális elrendezés: cím, leírás, gomb */
+    height: 100%; /* Fontos, hogy a grid-ben minden kártya azonos magasságú legyen */
+    
+    /* Vizuális stílusok */
+    background-color: white; /* Fehér háttér */
+    border: 1px solid #eee; /* Finom szegély */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Árnyék a kártya hatásért */
+    padding: 20px; /* Nagyobb belső térköz */
+    
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+}
+
+.card-container:hover {
+    transform: translateY(-5px); /* Kiemelés felfelé mozgatással */
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2); /* Még erősebb árnyék */
+}
+
+/* Kártya tartalom stílusa */
+.card-container h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--dark-blue, #0056b3); 
+}
+
+/* A leírás stílusa */
+.card-container p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+    /* Kitölti a rendelkezésre álló helyet a gomb előtt */
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    overflow: hidden;
+}
+
+/* A gombot tartalmazó konténer stílusa */
+/* Ezt használjuk a gomb aljára igazításához */
+.card-container .custom-button {
+    margin-top: auto; /* Ez tolja le a gombot az aljára, ha a kártyák magassága eltérne */
+    align-self: flex-start; /* Gomb a bal oldalra igazítása */
 }
