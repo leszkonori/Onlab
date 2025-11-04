@@ -48,6 +48,7 @@ export default function TaskCreatorView({
   saveElimination: () => Promise<void>
   evaluationType: EvaluationType
 }) {
+  const activeRoundIndex = roundsValue.findIndex(r => r.id === activeRound?.id)
   return (
     <>
       {/* 1. Fordulók szerkesztése / megjelenítése */}
@@ -63,10 +64,11 @@ export default function TaskCreatorView({
           <div className="rounds-grid">
             {roundsValue.map((round, index) => {
               const isActive = round.id === activeRound?.id // Meghatározás, hogy a forduló aktív-e
+              const isRoundEditable = editing && (activeRoundIndex === -1 || index >= activeRoundIndex)
               return (
                 <div 
                   key={index} 
-                  className={`creator-round-card ${isActive ? 'active' : ''}`} // 'active' class hozzáadása
+                  className={`creator-round-card ${isActive ? 'active' : ''} ${!isRoundEditable && editing ? 'disabled-editing' : ''}`} // 'active' class hozzáadása
                 >
                   
                   <div className="round-header-section"> {/* ÚJ: Header wrapper a flex alignmenthez */}
@@ -83,7 +85,7 @@ export default function TaskCreatorView({
                     )}
                   </div> {/* .round-header-section vége */}
 
-                  {editing ? (
+                  {isRoundEditable ? (
                     <div className="round-edit-form">
                       <div className="form-group">
                         <label className="form-label">Description</label>
