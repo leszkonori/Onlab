@@ -209,6 +209,13 @@
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
 }
 
+/* Added eliminated state for application cards */
+.application-card.eliminated {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-color: #fecaca;
+  opacity: 0.85;
+}
+
 /* Application Header */
 .application-header {
   display: flex;
@@ -223,6 +230,17 @@
   font-size: 16px;
   font-weight: 700;
   color: #1f2937;
+}
+
+/* Added eliminated badge styling */
+.eliminated-badge {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
 }
 
 .round-indicator {
@@ -316,63 +334,11 @@
   text-decoration: none;
 }
 
-/* Elimination Grid */
-.elimination-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-/* Elimination Card */
-.elimination-card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 20px;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.elimination-card:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.elimination-card.eliminated {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-  border-color: #fecaca;
-  opacity: 0.7;
-}
-
-/* Elimination Info */
-.elimination-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.elimination-info svg {
-  color: #3b82f6;
-  flex-shrink: 0;
-}
-
-.elimination-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-  flex: 1;
-}
-
-.eliminated-badge {
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #dc2626;
-  background: rgba(220, 38, 38, 0.1);
-  border-radius: 6px;
+/* Added elimination section styling within application cards */
+.elimination-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f3f4f6;
 }
 
 /* Elimination Checkbox */
@@ -382,6 +348,16 @@
   gap: 10px;
   cursor: pointer;
   user-select: none;
+  padding: 12px;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  transition: all 0.2s ease;
+}
+
+.elimination-checkbox:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
 }
 
 .elimination-checkbox input[type="checkbox"] {
@@ -389,6 +365,7 @@
   height: 20px;
   cursor: pointer;
   accent-color: #ef4444;
+  flex-shrink: 0;
 }
 
 .elimination-checkbox input[type="checkbox"]:disabled {
@@ -399,15 +376,19 @@
 .checkbox-label {
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: #991b1b;
 }
 
 /* Elimination Actions */
 .elimination-actions {
   display: flex;
   justify-content: center;
-  padding-top: 8px;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 2px solid #e5e7eb;
 }
+
+/* Removed old elimination grid and card styles as they're no longer needed */
 
 /* Empty State */
 .empty-state {
@@ -454,10 +435,6 @@
 
   .application-actions .action-button {
     justify-content: center;
-  }
-
-  .elimination-grid {
-    grid-template-columns: 1fr;
   }
 
   .elimination-actions {
