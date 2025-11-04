@@ -401,7 +401,7 @@ export default function Task({
               </button>
             </div>
           )}
-          {editable && activeRound && (
+          {editable && !editing && activeRound && (
             <div className="task-actions">
               {isBeforeToday(activeRound.deadline) && (
                 <button className="action-button primary" onClick={activateNextRound}>
