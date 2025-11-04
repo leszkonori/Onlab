@@ -29,7 +29,9 @@ export default function ActiveTasks() {
     const now = new Date()
 
     return tasks.filter((task) => {
-      const deadlineOk = task.applicationDeadline ? new Date(task.applicationDeadline) > now : true
+      const deadlineOk = task.applicationDeadline
+        ? new Date(task.applicationDeadline).setHours(23, 59, 59, 999) >= now.getTime()
+        : true
 
       const firstRound = task.rounds && task.rounds[0]
       const firstRoundActive = firstRound ? firstRound.isActive === true : false
