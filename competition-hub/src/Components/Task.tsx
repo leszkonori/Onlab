@@ -53,20 +53,26 @@ export default function Task({
 
   useEffect(() => {
     if (editable) {
-      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: "PUT" }).catch(() => {})
+      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: "PUT" }).catch(() => { })
     }
     if (!editable && user?.username) {
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
         method: "PUT",
-      }).catch(() => {})
+      }).catch(() => { })
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-elimination-view/${user.username}`, {
         method: "PUT",
-      }).catch(() => {})
+      }).catch(() => { })
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-round-activation-view/${user.username}`, {
         method: "PUT",
-      }).catch(() => {})
+      }).catch(() => { })
     }
   }, [id, editable, user?.username])
+
+  useEffect(() => {
+    if (rounds) {
+      setRoundsValue(rounds)
+    }
+  }, [rounds])
 
   useEffect(() => {
     async function loadEliminated() {

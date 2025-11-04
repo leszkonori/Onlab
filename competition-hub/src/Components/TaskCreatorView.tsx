@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type React from "react"
 import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { formatDate } from "./TaskUtils"
@@ -52,6 +52,12 @@ export default function TaskCreatorView({
   const activeRoundIndex = roundsValue.findIndex((r) => r.id === activeRound?.id)
 
   const [expandedRoundId, setExpandedRoundId] = useState<number | undefined>(activeRound?.id)
+
+  useEffect(() => {
+    if (activeRound?.id) {
+      setExpandedRoundId(activeRound.id)
+    }
+  }, [activeRound?.id])
 
   const getApplicationsForRound = (roundId: number | undefined) => {
     if (!roundId) return []
