@@ -5,6 +5,38 @@
   gap: 20px;
 }
 
+.eliminated-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 2px solid #fecaca;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.eliminated-notice svg {
+  color: #ef4444;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-top: 4px;
+}
+
+.eliminated-notice h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #991b1b;
+  margin: 0 0 4px 0;
+}
+
+.eliminated-notice p {
+  font-size: 15px;
+  color: #991b1b;
+  margin: 0;
+}
+
 /* Applicant Round Card */
 .applicant-round-card {
   background: white;
