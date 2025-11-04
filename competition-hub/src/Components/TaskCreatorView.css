@@ -46,6 +46,7 @@
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
 }
 
+/* Made round header clickable and added styles for chevron */
 .round-header-section {
   display: flex;
   justify-content: space-between;
@@ -55,11 +56,45 @@
   border-bottom: 2px solid #f3f4f6;
 }
 
+.round-header-section.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  margin: -24px -24px 20px -24px;
+  padding: 24px 24px 16px 24px;
+  border-radius: 12px 12px 0 0;
+}
+
+.round-header-section.clickable:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.round-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .round-badge {
   flex-shrink: 0;
   font-size: 16px;
   font-weight: 700;
   color: #1f2937;
+}
+
+/* Added chevron icon styles with rotation animation */
+.chevron-icon {
+  color: #6b7280;
+  transition: transform 0.3s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevron-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.round-header-section.clickable:hover .chevron-icon {
+  color: #3b82f6;
 }
 
 .active-badge {
