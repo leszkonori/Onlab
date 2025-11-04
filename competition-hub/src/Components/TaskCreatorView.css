@@ -14,10 +14,10 @@
   flex-shrink: 0;
 }
 
-/* Rounds Grid */
+/* Rounds Grid - changed to flex column so rounds take full width */
 .rounds-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
@@ -35,15 +35,15 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .creator-round-card.disabled-editing {
-  background: #f1f5f9; /* Világosszürke háttér */
-  border-color: #cbd5e1; /* Szürke keret */
-  opacity: 0.7; /* Halványítás */
-  pointer-events: none; /* Letiltja az eseménykezelést, így nem lehet rákattintani */
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  opacity: 0.7;
+  pointer-events: none;
 }
 .creator-round-card.active {
-  background: white; /* Fehér háttér, ha aktív */
-  border-color: #10b981; /* Vibráló zöld keret */
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); /* Külső zöld fény */
+  background: white;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
 }
 
 .round-header-section {
@@ -56,7 +56,6 @@
 }
 
 .round-badge {
-  /* Hozzáadva a flexboxhoz való jobb igazodás miatt, ha a badge a .round-header-section eleje */
   flex-shrink: 0;
   font-size: 16px;
   font-weight: 700;
@@ -70,12 +69,12 @@
   padding: 6px 12px;
   font-size: 13px;
   font-weight: 700;
-  color: #059669; /* Sötétzöld szöveg */
-  background: rgba(16, 185, 129, 0.15); /* Világosabb zöld háttér */
+  color: #059669;
+  background: rgba(16, 185, 129, 0.15);
   border-radius: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid #10b981; /* Vékony zöld keret */
+  border: 1px solid #10b981;
 }
 
 .active-badge svg {
@@ -127,10 +126,32 @@
   padding-left: 26px;
 }
 
-/* Applications Grid */
-.applications-grid {
+/* New section for applications within a round */
+.round-applications-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e5e7eb;
+}
+
+.applications-subtitle {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.applications-subtitle svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* Applications Grid - changed to grid so multiple applications fit in one row */
+.applications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
 }
 
@@ -377,7 +398,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .rounds-grid {
+  .applications-grid {
     grid-template-columns: 1fr;
   }
 

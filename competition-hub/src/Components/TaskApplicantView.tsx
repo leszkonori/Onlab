@@ -4,7 +4,7 @@ import type React from "react"
 import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
 import { formatDateOnly } from "./TaskUtils"
-import "./TaskApplicantView.css";
+import "./TaskApplicantView.css"
 
 /**
  * Pályázó nézet komponens.
@@ -65,7 +65,7 @@ export default function TaskApplicantView({
           )
 
           return (
-            <div key={index} className={`applicant-round-card ${(round as any).isActive ? 'active' : ''}`}>
+            <div key={index} className={`applicant-round-card ${(round as any).isActive ? "active" : ""}`}>
               <div className="round-header-section">
                 <div className="round-badge">Round {index + 1}</div>
                 {(round as any).isActive && (
@@ -171,7 +171,6 @@ export default function TaskApplicantView({
                 </div>
               )}
 
-              
               {!hasAppliedToThisRound && (round as any).isActive && !currentUserEliminated && (
                 <div className="upload-section-wrapper">
                   <div className="upload-header">
