@@ -61,72 +61,92 @@ export default function TaskCreatorView({
             Rounds
           </h3>
           <div className="rounds-grid">
-            {roundsValue.map((round, index) => (
-              <div key={index} className="creator-round-card">
-                <div className="round-badge">Round {index + 1}</div>
-                {editing ? (
-                  <div className="round-edit-form">
-                    <div className="form-group">
-                      <label className="form-label">Description</label>
-                      <textarea
-                        className="form-textarea"
-                        value={round.description}
-                        onChange={(e) => handleRoundChange(index, "description", e.target.value)}
-                        placeholder="Enter round description..."
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Deadline</label>
-                      <input
-                        type="date"
-                        className="form-input"
-                        value={(round.deadline as string | undefined)?.slice(0, 10) || ""}
-                        onChange={(e) => handleRoundChange(index, "deadline", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="round-info-grid">
-                    <div className="info-item">
-                      <span className="info-label">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
+            {roundsValue.map((round, index) => {
+              const isActive = round.id === activeRound?.id // Meghatározás, hogy a forduló aktív-e
+              return (
+                <div 
+                  key={index} 
+                  className={`creator-round-card ${isActive ? 'active' : ''}`} // 'active' class hozzáadása
+                >
+                  
+                  <div className="round-header-section"> {/* ÚJ: Header wrapper a flex alignmenthez */}
+                    <div className="round-badge">Round {index + 1}</div>
+                    
+                    {/* ÚJ: Active Badge */}
+                    {isActive && (
+                      <div className="active-badge">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                          <circle cx="12" cy="12" r="8" />
                         </svg>
-                        Description
-                      </span>
-                      <p className="info-value">{round.description}</p>
+                        Active
+                      </div>
+                    )}
+                  </div> {/* .round-header-section vége */}
+
+                  {editing ? (
+                    <div className="round-edit-form">
+                      <div className="form-group">
+                        <label className="form-label">Description</label>
+                        <textarea
+                          className="form-textarea"
+                          value={round.description}
+                          onChange={(e) => handleRoundChange(index, "description", e.target.value)}
+                          placeholder="Enter round description..."
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Deadline</label>
+                        <input
+                          type="date"
+                          className="form-input"
+                          value={(round.deadline as string | undefined)?.slice(0, 10) || ""}
+                          onChange={(e) => handleRoundChange(index, "deadline", e.target.value)}
+                        />
+                      </div>
                     </div>
-                    <div className="info-item">
-                      <span className="info-label">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        Deadline
-                      </span>
-                      <p className="info-value">{round.deadline ? (round.deadline as string).slice(0, 10) : "—"}</p>
+                  ) : (
+                    <div className="round-info-grid">
+                      <div className="info-item">
+                        <span className="info-label">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                          </svg>
+                          Description
+                        </span>
+                        <p className="info-value">{round.description}</p>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                          Deadline
+                        </span>
+                        <p className="info-value">{round.deadline ? (round.deadline as string).slice(0, 10) : "—"}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

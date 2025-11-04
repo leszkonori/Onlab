@@ -34,16 +34,49 @@
   border-color: #d1d5db;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+.creator-round-card.active {
+  background: white; /* Fehér háttér, ha aktív */
+  border-color: #10b981; /* Vibráló zöld keret */
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); /* Külső zöld fény */
+}
+
+.round-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
 
 .round-badge {
-  display: inline-block;
-  padding: 6px 14px;
+  /* Hozzáadva a flexboxhoz való jobb igazodás miatt, ha a badge a .round-header-section eleje */
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.active-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   font-size: 13px;
   font-weight: 700;
-  color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
+  color: #059669; /* Sötétzöld szöveg */
+  background: rgba(16, 185, 129, 0.15); /* Világosabb zöld háttér */
   border-radius: 8px;
-  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #10b981; /* Vékony zöld keret */
+}
+
+.active-badge svg {
+  color: #10b981;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
 }
 
 /* Round Edit Form */

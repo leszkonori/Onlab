@@ -65,10 +65,17 @@ export default function TaskApplicantView({
           )
 
           return (
-            <div key={index} className="applicant-round-card">
+            <div key={index} className={`applicant-round-card ${(round as any).isActive ? 'active' : ''}`}>
               <div className="round-header-section">
                 <div className="round-badge">Round {index + 1}</div>
-                
+                {(round as any).isActive && (
+                  <div className="active-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                      <circle cx="12" cy="12" r="8" />
+                    </svg>
+                    Active
+                  </div>
+                )}
               </div>
 
               <div className="round-info-grid">

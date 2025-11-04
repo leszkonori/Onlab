@@ -37,7 +37,6 @@
   margin: 0;
 }
 
-/* Applicant Round Card */
 .applicant-round-card {
   background: white;
   border: 2px solid #e5e7eb;
@@ -51,6 +50,12 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+/* ÚJ KÓD: Aktív kártya kiemelése */
+.applicant-round-card.active {
+  border-color: #10b981; /* Vibráló zöld keret */
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); /* Külső zöld fény */
+}
+
 /* Round Header Section */
 .round-header-section {
   display: flex;
@@ -59,6 +64,35 @@
   margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 2px solid #f3f4f6;
+}
+.active-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700; /* Kiemeltebb betűtípus */
+  color: #059669; /* Sötétzöld szöveg */
+  background: rgba(16, 185, 129, 0.15); /* Világosabb zöld háttér */
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #10b981; /* Vékony zöld keret */
+}
+
+.active-badge svg {
+  color: #10b981;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.round-badge {
+  /* Hozzáadva a flexboxhoz való jobb igazodás miatt, ha a badge a .round-header-section eleje */
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
 }
 
 .applied-badge {
