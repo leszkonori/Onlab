@@ -25,18 +25,38 @@ export default function ActiveTasks() {
       })
   }, [])
 
-  const activeVisibleTasks = useMemo(() => {
+const activeVisibleTasks = useMemo(() => {
     const now = new Date()
 
-    return tasks.filter((task) => {
-      const deadlineOk = task.applicationDeadline
-        ? new Date(task.applicationDeadline).setHours(23, 59, 59, 999) >= now.getTime()
+    // Segédfüggvény a releváns határidő kinyerésére (szükséges a szűréshez)
+    const getEffectiveDeadline = (task: TaskType) => {
+      // Ha van forduló, az első forduló határidejét nézzük
+      if (task.rounds && task.rounds.length > 0) {
+        return task.rounds[0].deadline
+      }
+      // Ha nincs forduló, az általános alkalmazási határidőt nézzük
+      return task.applicationDeadline
+    }
+
+    const filteredTasks = tasks.filter((task) => {
+      const deadline = getEffectiveDeadline(task)
+      
+      // Határidő ellenőrzése (23:59:59.999-re állítva a mai nap befogadásához)
+      const deadlineOk = deadline
+        ? new Date(deadline).setHours(23, 59, 59, 999) >= now.getTime()
         : true
 
       const firstRound = task.rounds && task.rounds[0]
       const firstRoundActive = firstRound ? firstRound.isActive === true : false
 
+      // Szűrési feltétel
       return (deadlineOk && firstRoundActive) || (deadlineOk && !firstRound)
+    })
+
+    // RENDEZÉS: Task ID ('id' prop) szerint csökkenő sorrendben
+    return filteredTasks.sort((a, b) => {
+      // Csökkenő sorrend: A nagyobb ID-jű task (b.id) kerül a kisebb (a.id) elé.
+      return b.id - a.id
     })
   }, [tasks])
 
