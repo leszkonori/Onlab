@@ -1,49 +1,97 @@
-import { Link } from "react-router-dom";
-import ListCard from "../Components/ListCard";
-import { useKeycloak } from "../KeycloakProvider";
-import { useEffect, useMemo, useState } from "react";
-import { TaskType } from "../types";
-import './ActiveTasks.css'
+"use client"
+import ListCard from "../Components/ListCard"
+import { useEffect, useMemo, useState } from "react"
+import type { TaskType } from "../types"
+import "./ActiveTasks.css"
+import { Loader2, AlertCircle } from "lucide-react"
 
 export default function ActiveTasks() {
+  const [tasks, setTasks] = useState<TaskType[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-    const [tasks, setTasks] = useState<TaskType[]>([]);
+  useEffect(() => {
+    setLoading(true)
+    fetch("http://localhost:8081/api/tasks")
+      .then((res) => res.json())
+      .then((data) => {
+        setTasks(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error("Error loading the tasks:", err)
+        setError("Failed to load tasks. Please try again later.")
+        setLoading(false)
+      })
+  }, [])
 
-    useEffect(() => {
-        fetch("http://localhost:8081/api/tasks")
-            .then((res) => res.json())
-            .then((data) => setTasks(data))
-            .catch((err) => console.error("Error loading the tasks:", err));
-    }, []);
+const activeVisibleTasks = useMemo(() => {
+    const now = new Date()
 
-    const activeVisibleTasks = useMemo(() => {
-        const now = new Date();
+    // Segédfüggvény a releváns határidő kinyerésére (szükséges a szűréshez)
+    const getEffectiveDeadline = (task: TaskType) => {
+      // Ha van forduló, az első forduló határidejét nézzük
+      if (task.rounds && task.rounds.length > 0) {
+        return task.rounds[0].deadline
+      }
+      // Ha nincs forduló, az általános alkalmazási határidőt nézzük
+      return task.applicationDeadline
+    }
 
-        return tasks.filter((task) => {
-            // 1) deadline check
-            // ha nincs deadline mező, akkor biztonság kedvéért engedjük át
-            const deadlineOk = task.applicationDeadline
-                ? new Date(task.applicationDeadline) > now
-                : true;
+    const filteredTasks = tasks.filter((task) => {
+      const deadline = getEffectiveDeadline(task)
+      
+      // Határidő ellenőrzése (23:59:59.999-re állítva a mai nap befogadásához)
+      const deadlineOk = deadline
+        ? new Date(deadline).setHours(23, 59, 59, 999) >= now.getTime()
+        : true
 
-            // 2) első round isActive check
-            const firstRound = task.rounds && task.rounds[0];
-            const firstRoundActive = firstRound ? firstRound.isActive === true : false;
+      const firstRound = task.rounds && task.rounds[0]
+      const firstRoundActive = firstRound ? firstRound.isActive === true : false
 
-            return deadlineOk && firstRoundActive || deadlineOk && !firstRound;
-        });
-    }, [tasks]);
+      // Szűrési feltétel
+      return (deadlineOk && firstRoundActive) || (deadlineOk && !firstRound)
+    })
 
+    // RENDEZÉS: Task ID ('id' prop) szerint csökkenő sorrendben
+    return filteredTasks.sort((a, b) => {
+      // Csökkenő sorrend: A nagyobb ID-jű task (b.id) kerül a kisebb (a.id) elé.
+      return b.id - a.id
+    })
+  }, [tasks])
+
+  if (loading) {
     return (
-        <ul className="task-list-container">
-            {activeVisibleTasks.map((task) => (
-                <ListCard
-                    key={task.id}
-                    title={task.title}
-                    descr={task.description}
-                    link={`/apply/${task.id}`}
-                />
-            ))}
-        </ul>
-    );
+      <div className="task-list-state">
+        <Loader2 className="spinner" size={48} />
+        <p className="state-message">Loading tasks...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="task-list-state error">
+        <AlertCircle size={48} />
+        <p className="state-message">{error}</p>
+      </div>
+    )
+  }
+
+  if (activeVisibleTasks.length === 0) {
+    return (
+      <div className="task-list-state">
+        <AlertCircle size={48} />
+        <p className="state-message">No active tasks available at the moment.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="task-list-container">
+      {activeVisibleTasks.map((task) => (
+        <ListCard key={task.id} title={task.title} descr={task.description} link={`/apply/${task.id}`} />
+      ))}
+    </div>
+  )
 }

@@ -1,39 +1,448 @@
-.add-round-container.application {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 10px;
+/* Section Title */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1f2e;
+  margin: 0 0 24px 0;
 }
 
-.round-container.application {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
-    padding: 10px;
-    width: fit-content;
-}
-.round-container.application.editing {
-    width: 100%;
+.section-title svg {
+  color: #3b82f6;
+  flex-shrink: 0;
 }
 
-.round-container.application {
-    margin-bottom: 0px;
-}
-/* Stílusok az eliminációs panelhez */
-.application-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    width: 100%; /* vagy illeszd a szülőhöz */
+/* Rounds Grid - changed to flex column so rounds take full width */
+.rounds-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
+/* Creator Round Card */
+.creator-round-card {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.creator-round-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.creator-round-card.disabled-editing {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.creator-round-card.active {
+  background: white;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+}
+
+/* Made round header clickable and added styles for chevron */
+.round-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.round-header-section.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  margin: -24px -24px 20px -24px;
+  padding: 24px 24px 16px 24px;
+  border-radius: 12px 12px 0 0;
+}
+
+.round-header-section.clickable:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.round-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.round-badge {
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Added chevron icon styles with rotation animation */
+.chevron-icon {
+  color: #6b7280;
+  transition: transform 0.3s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevron-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.round-header-section.clickable:hover .chevron-icon {
+  color: #3b82f6;
+}
+
+.active-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #10b981;
+}
+
+.active-badge svg {
+  color: #10b981;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+/* Round Edit Form */
+.round-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Round Info Grid */
+.round-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.info-label svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.info-value {
+  font-size: 15px;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.6;
+  padding-left: 26px;
+}
+
+/* New section for applications within a round */
+.round-applications-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e5e7eb;
+}
+
+.applications-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.applications-subtitle svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* Applications Grid - changed to grid so multiple applications fit in one row */
+.applications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Application Card */
+.application-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.application-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.application-card.editing {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+}
+
+/* Added eliminated state for application cards */
+.application-card.eliminated {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-color: #fecaca;
+  opacity: 0.85;
+}
+
+/* Application Header */
+.application-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.application-badge {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Added eliminated badge styling */
+.eliminated-badge {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+}
+
+.round-indicator {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+}
+
+/* Application Info */
 .application-info {
-    display: flex;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.application-buttons {
-    display: flex;
-    gap: 10px;
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6b7280;
+}
+
+.info-row svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.info-text {
+  font-size: 15px;
+  color: #1f2937;
+}
+
+/* Review Section */
+.review-section {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 10px;
+}
+
+.review-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-display {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.review-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.review-label svg {
+  color: #3b82f6;
+}
+
+.review-text {
+  font-size: 15px;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.6;
+  padding-left: 26px;
+}
+
+.review-points {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+/* Application Actions */
+.application-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.download-link {
+  text-decoration: none;
+}
+
+/* Added elimination section styling within application cards */
+.elimination-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f3f4f6;
+}
+
+/* Elimination Checkbox */
+.elimination-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 12px;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  transition: all 0.2s ease;
+}
+
+.elimination-checkbox:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+.elimination-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #ef4444;
+  flex-shrink: 0;
+}
+
+.elimination-checkbox input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.checkbox-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #991b1b;
+}
+
+/* Elimination Actions */
+.elimination-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 2px solid #e5e7eb;
+}
+
+/* Removed old elimination grid and card styles as they're no longer needed */
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-state svg {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .applications-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .application-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .application-actions {
+    flex-direction: column;
+  }
+
+  .application-actions .action-button,
+  .download-link {
+    width: 100%;
+  }
+
+  .application-actions .action-button {
+    justify-content: center;
+  }
+
+  .elimination-actions {
+    width: 100%;
+  }
+
+  .elimination-actions .action-button {
+    width: 100%;
+    justify-content: center;
+  }
 }

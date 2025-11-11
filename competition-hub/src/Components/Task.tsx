@@ -1,19 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Task.css';
-import { ApplicationType, EvaluationType, RoundType } from '../types';
-import { useKeycloak } from '../KeycloakProvider';
+"use client"
 
-// Nézetek
-import TaskApplicantView from './TaskApplicantView';
-import TaskCreatorView from './TaskCreatorView';
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import "./Task.css"
+import type { ApplicationType, EvaluationType, RoundType } from "../types"
+import { useKeycloak } from "../KeycloakProvider"
 
-// Új: utilok a TaskUtils-ból
-import {
-  formatDateOnly,
-  getNextUpcomingDeadline,
-  isBeforeToday,
-} from './TaskUtils';
+// Views
+import TaskApplicantView from "./TaskApplicantView"
+import TaskCreatorView from "./TaskCreatorView"
+
+// Utils
+import { formatDateOnly, getNextUpcomingDeadline, isBeforeToday } from "./TaskUtils"
 
 export default function Task({
   id,
@@ -26,281 +24,313 @@ export default function Task({
   onSave,
   evaluationType,
 }: {
-  id: number;
-  title: string;
-  descr: string;
-  date: string;
-  rounds?: RoundType[];
-  applications?: ApplicationType[];
-  editable: boolean;
-  onSave?: () => void;
-  evaluationType: EvaluationType;
+  id: number
+  title: string
+  descr: string
+  date: string
+  rounds?: RoundType[]
+  applications?: ApplicationType[]
+  editable: boolean
+  onSave?: () => void
+  evaluationType: EvaluationType
 }) {
-  const [editing, setEditing] = useState(false);
-  const [titleValue, setTitleValue] = useState(title);
-  const [descrValue, setDescrValue] = useState(descr);
-  const [dateValue, setDateValue] = useState(date);
-  const [roundsValue, setRoundsValue] = useState(rounds || []);
-  const [applicationStates, setApplicationStates] = useState(applications || []);
-  const { user } = useKeycloak();
+  const [editing, setEditing] = useState(false)
+  const [titleValue, setTitleValue] = useState(title)
+  const [descrValue, setDescrValue] = useState(descr)
+  const [dateValue, setDateValue] = useState(date)
+  const [roundsValue, setRoundsValue] = useState(rounds || [])
+  const [applicationStates, setApplicationStates] = useState(applications || [])
+  const { user } = useKeycloak()
 
-  // Eliminálás
-  const [eliminatedApplicants, setEliminatedApplicants] = useState<string[]>([]);
-  const [selectedToEliminate, setSelectedToEliminate] = useState<Set<string>>(new Set());
+  const [eliminatedApplicants, setEliminatedApplicants] = useState<string[]>([])
+  const [selectedToEliminate, setSelectedToEliminate] = useState<Set<string>>(new Set())
+  const [selectedFiles, setSelectedFiles] = useState<{ [roundId: number]: File | null }>({})
+  const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
+  const [originalReviewCache, setOriginalReviewCache] = useState<string | undefined | null>(undefined)
+  const isAnyReviewEditing = editingReviewId !== null
 
-  // Feltöltés (applicant)
-  const [selectedFiles, setSelectedFiles] = useState<{ [roundId: number]: File | null }>({});
+  const navigate = useNavigate()
 
-  // Review szerkesztés (creator)
-  const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
-  const [originalReviewCache, setOriginalReviewCache] = useState<string | undefined | null>(undefined);
-  const isAnyReviewEditing = editingReviewId !== null;
-
-  const navigate = useNavigate();
-
-  // Creator/applicant jelző „megtekintve”
   useEffect(() => {
     if (editable) {
-      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: 'PUT' }).catch(() => { });
+      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: "PUT" }).catch(() => { })
     }
     if (!editable && user?.username) {
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
-        method: 'PUT',
-      }).catch(() => { });
+        method: "PUT",
+      }).catch(() => { })
       fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-elimination-view/${user.username}`, {
-        method: 'PUT',
-      }).catch(() => { });
-      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-round-activation-view/${user.username}`, { method: 'PUT' })
-        .catch(() => { });
+        method: "PUT",
+      }).catch(() => { })
+      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-round-activation-view/${user.username}`, {
+        method: "PUT",
+      }).catch(() => { })
     }
-  }, [id, editable, user?.username]);
+  }, [id, editable, user?.username])
 
-  // Eliminált felhasználók betöltése
+  useEffect(() => {
+    if (rounds) {
+      setRoundsValue(rounds)
+    }
+  }, [rounds])
+
   useEffect(() => {
     async function loadEliminated() {
       try {
-        const res = await fetch(`http://localhost:8081/api/tasks/${id}`);
-        if (!res.ok) return;
-        const taskJson = await res.json();
-        setEliminatedApplicants(taskJson.eliminatedApplicants ?? []);
+        const res = await fetch(`http://localhost:8081/api/tasks/${id}`)
+        if (!res.ok) return
+        const taskJson = await res.json()
+        setEliminatedApplicants(taskJson.eliminatedApplicants ?? [])
       } catch (e) {
-        console.error('Failed to load eliminated applicants', e);
+        console.error("Failed to load eliminated applicants", e)
       }
     }
-    loadEliminated();
-  }, [id]);
+    loadEliminated()
+  }, [id])
 
-  // Aktív forduló és társai
-  const activeRound = (roundsValue || []).find((r) => (r as any).isActive) || null;
+  const activeRound = (roundsValue || []).find((r) => (r as any).isActive) || null
   const activeRoundApplications = activeRound
     ? (applicationStates || []).filter((app) => app.round?.id === activeRound.id)
-    : [];
-  const activeRoundUsernames = Array.from(new Set(activeRoundApplications.map((a) => a.keycloakUserName))).sort();
+    : []
+  const activeRoundUsernames = Array.from(new Set(activeRoundApplications.map((a) => a.keycloakUserName))).sort()
 
-  const currentUserEliminated = user?.username ? eliminatedApplicants.includes(user.username) : false;
+  const currentUserEliminated = user?.username ? eliminatedApplicants.includes(user.username) : false
 
-  // ---------- Műveletek ----------
   async function uploadToRound(roundId: number) {
-    if (!user) return;
-    const file = selectedFiles[roundId];
+    if (!user) return
+    const file = selectedFiles[roundId]
     if (!file) {
-      alert('Please select a file first.');
-      return;
+      alert("Please select a file first.")
+      return
     }
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('keycloakUserId', user.id);
-    formData.append('keycloakUserName', user.username);
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("keycloakUserId", user.id)
+    formData.append("keycloakUserName", user.username)
 
     try {
       const response = await fetch(`http://localhost:8081/api/applications/${id}/round/${roundId}`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
-      });
-      const result = await response.text();
-      alert(result);
-      window.location.reload();
+      })
+      const result = await response.text()
+      alert(result)
+      window.location.reload()
     } catch (e) {
-      console.error('Upload error:', e);
-      alert('Upload failed.');
+      console.error("Upload error:", e)
+      alert("Upload failed.")
     }
   }
 
-  const handleRoundChange = (index: number, field: 'description' | 'deadline', value: string) => {
-    const updatedRounds = [...roundsValue];
-    updatedRounds[index] = { ...updatedRounds[index], [field]: value };
-    setRoundsValue(updatedRounds);
-  };
+  const handleRoundChange = (index: number, field: "description" | "deadline", value: string) => {
+    const updatedRounds = [...roundsValue]
+    updatedRounds[index] = { ...updatedRounds[index], [field]: value }
+    setRoundsValue(updatedRounds)
+  }
 
   async function handleSave() {
     try {
       const cleanedRounds = roundsValue.map(({ applications: _apps, ...rest }) => ({
         ...rest,
-        deadline: (rest.deadline as string | undefined)?.slice(0, 10) || '',
-      }));
+        deadline: (rest.deadline as string | undefined)?.slice(0, 10) || "",
+      }))
 
       const payload: any = {
         title: titleValue,
         description: descrValue,
         rounds: cleanedRounds,
-        ...(cleanedRounds.length === 0 ? { applicationDeadline: (dateValue || '').slice(0, 10) } : {}),
-      };
+        ...(cleanedRounds.length === 0 ? { applicationDeadline: (dateValue || "").slice(0, 10) } : {}),
+      }
 
       const response = await fetch(`http://localhost:8081/api/tasks/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      })
 
-      if (!response.ok) throw new Error('Failed to update task');
+      if (!response.ok) throw new Error("Failed to update task")
 
-      alert('Task updated successfully!');
-      setEditing(false);
-      onSave?.();
+      alert("Task updated successfully!")
+      setEditing(false)
+      onSave?.()
     } catch (error) {
-      console.error('Error updating task:', error);
-      alert('Failed to update task');
+      console.error("Error updating task:", error)
+      alert("Failed to update task")
     }
   }
 
   async function handleSaveReview(appId: number, text: string | null, points: number | null) {
     try {
       const response = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, points }),
-      });
-      if (!response.ok) throw new Error('Failed to update review');
+      })
+      if (!response.ok) throw new Error("Failed to update review")
 
-      alert('Review updated successfully!');
-      setEditingReviewId(null);
-      setOriginalReviewCache(undefined);
+      alert("Review updated successfully!")
+      setEditingReviewId(null)
+      setOriginalReviewCache(undefined)
 
       setApplicationStates((prev) =>
-        prev.map((app) => (app.id === appId ? { ...app, reviewText: text ?? undefined, reviewPoints: points } : app))
-      );
-      onSave?.();
+        prev.map((app) => (app.id === appId ? { ...app, reviewText: text ?? undefined, reviewPoints: points } : app)),
+      )
+      onSave?.()
     } catch (error) {
-      console.error('Error updating review:', error);
-      alert('Failed to update review');
+      console.error("Error updating review:", error)
+      alert("Failed to update review")
     }
   }
 
   const handleCancelReviewEdit = (appId: number) => {
-    const originalReview = originalReviewCache === null ? undefined : originalReviewCache;
-    setApplicationStates((prev) => prev.map((app) => (app.id === appId ? { ...app, review: originalReview } : app)));
-    setOriginalReviewCache(undefined);
-    setEditingReviewId(null);
-  };
+    const originalReview = originalReviewCache === null ? undefined : originalReviewCache
+    setApplicationStates((prev) => prev.map((app) => (app.id === appId ? { ...app, review: originalReview } : app)))
+    setOriginalReviewCache(undefined)
+    setEditingReviewId(null)
+  }
 
   const handleReviewTextChange = (id: number, newText: string) => {
-    setApplicationStates((prev) => prev.map((app) => (app.id === id ? { ...app, reviewText: newText } : app)));
-  };
+    setApplicationStates((prev) => prev.map((app) => (app.id === id ? { ...app, reviewText: newText } : app)))
+  }
 
   const handleReviewPointsChange = (id: number, newPointsStr: string) => {
-    const val = newPointsStr === '' ? null : Math.max(0, Math.min(10, Number(newPointsStr)));
-    setApplicationStates((prev) => prev.map((app) => (app.id === id ? { ...app, reviewPoints: val } : app)));
-  };
+    const val = newPointsStr === "" ? null : Math.max(0, Math.min(10, Number(newPointsStr)))
+    setApplicationStates((prev) => prev.map((app) => (app.id === id ? { ...app, reviewPoints: val } : app)))
+  }
 
   function toggleSelect(username: string) {
     setSelectedToEliminate((prev) => {
-      const next = new Set(prev);
-      if (next.has(username)) next.delete(username);
-      else next.add(username);
-      return next;
-    });
+      const next = new Set(prev)
+      if (next.has(username)) next.delete(username)
+      else next.add(username)
+      return next
+    })
   }
 
   async function saveElimination() {
-    const updated = Array.from(new Set([...eliminatedApplicants, ...Array.from(selectedToEliminate)]));
+    const updated = Array.from(new Set([...eliminatedApplicants, ...Array.from(selectedToEliminate)]))
     try {
       const res = await fetch(`http://localhost:8081/api/tasks/${id}/eliminate-applicants`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
-      });
+      })
       if (res.ok) {
-        setEliminatedApplicants(updated);
-        setSelectedToEliminate(new Set());
-        alert('Eliminálás mentve. A kijelöltek a következő fordulókra már nem pályázhatnak.');
+        setEliminatedApplicants(updated)
+        setSelectedToEliminate(new Set())
+        alert("Eliminálás mentve. A kijelöltek a következő fordulókra már nem pályázhatnak.")
       } else {
-        const msg = await res.text();
-        alert('Nem sikerült menteni: ' + msg);
+        const msg = await res.text()
+        alert("Nem sikerült menteni: " + msg)
       }
     } catch (e) {
-      console.error(e);
-      alert('Hálózati hiba az eliminálás mentése közben.');
+      console.error(e)
+      alert("Hálózati hiba az eliminálás mentése közben.")
     }
   }
 
   async function handleDelete() {
-    const confirmed = window.confirm('Are you sure you want to delete this task?');
-    if (!confirmed) return;
+    const confirmed = window.confirm("Are you sure you want to delete this task?")
+    if (!confirmed) return
     try {
-      const response = await fetch(`http://localhost:8081/api/tasks/${id}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:8081/api/tasks/${id}`, { method: "DELETE" })
       if (response.ok) {
-        alert('Task deleted successfully!');
-        navigate('/');
+        alert("Task deleted successfully!")
+        navigate("/")
       } else {
-        alert('Error: Could not delete the task!');
+        alert("Error: Could not delete the task!")
       }
     } catch (error) {
-      console.error('Error deleting task:', error);
-      alert('There was an error while deleting the task.');
+      console.error("Error deleting task:", error)
+      alert("There was an error while deleting the task.")
     }
   }
 
   async function activateNextRound() {
-    const res = await fetch(`http://localhost:8081/api/tasks/${id}/activate-next`, { method: 'PUT' });
+    const res = await fetch(`http://localhost:8081/api/tasks/${id}/activate-next`, { method: "PUT" })
     if (res.ok) {
-      alert('Next round activated.');
-      onSave?.();
+      alert("Next round activated.")
+      onSave?.()
     } else {
-      const txt = await res.text();
-      alert('Cannot activate next round: ' + txt);
+      const txt = await res.text()
+      alert("Cannot activate next round: " + txt)
     }
   }
 
-  // ---------- Render ----------
   return (
     <div className="task-container">
-      {/* Fejléc blokk */}
-      <div className="task-grid">
-        <h4>Task name:</h4>
-        {editing ? (
-          <input type="text" value={titleValue} onChange={(e) => setTitleValue(e.target.value)} />
-        ) : (
-          <p>{title}</p>
-        )}
-
-        <h4>Description:</h4>
-        {editing ? (
-          <textarea value={descrValue} onChange={(e) => setDescrValue(e.target.value)} />
-        ) : (
-          <p>{descr}</p>
-        )}
-
-        <h4>{roundsValue.length === 0 ? 'Deadline:' : 'Current round deadline:'}</h4>
-        {editing ? (
-          roundsValue.length === 0 ? (
-            <input
-              type="date"
-              value={(dateValue || '').slice(0, 10)}
-              onChange={(e) => setDateValue(e.target.value)}
-            />
-          ) : (
-            <p>{getNextUpcomingDeadline(roundsValue) ? formatDateOnly(getNextUpcomingDeadline(roundsValue)!) : '—'}</p>
-          )
-        ) : (
-          <p>
-            {getNextUpcomingDeadline(roundsValue)
-              ? formatDateOnly(getNextUpcomingDeadline(roundsValue)!)
-              : formatDateOnly(dateValue)}
-          </p>
-        )}
+      <div className="task-header">
+        <div className="task-header-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <h2 className="task-header-title">Task Details</h2>
       </div>
 
-      {/* Nézetek szétválasztva */}
+      <div className="task-info-section">
+        <div className="task-info-grid">
+          <div className="info-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span>Task name:</span>
+          </div>
+          {editing ? (
+            <input
+              type="text"
+              className="task-input"
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+            />
+          ) : (
+            <p className="info-value">{title}</p>
+          )}
+
+          <div className="info-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+            <span>Description:</span>
+          </div>
+          {editing ? (
+            <textarea className="task-textarea" value={descrValue} onChange={(e) => setDescrValue(e.target.value)} />
+          ) : (
+            <p className="info-value">{descr}</p>
+          )}
+
+          <div className="info-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span>{roundsValue.length === 0 ? "Deadline:" : "Current round deadline:"}</span>
+          </div>
+          {editing ? (
+            roundsValue.length === 0 ? (
+              <input
+                type="date"
+                className="task-input"
+                value={(dateValue || "").slice(0, 10)}
+                onChange={(e) => setDateValue(e.target.value)}
+              />
+            ) : (
+              <p className="info-value">
+                {getNextUpcomingDeadline(roundsValue) ? formatDateOnly(getNextUpcomingDeadline(roundsValue)!) : "—"}
+              </p>
+            )
+          ) : (
+            <p className="info-value">
+              {getNextUpcomingDeadline(roundsValue)
+                ? formatDateOnly(getNextUpcomingDeadline(roundsValue)!)
+                : formatDateOnly(dateValue)}
+            </p>
+          )}
+        </div>
+      </div>
+
       {editable ? (
         <TaskCreatorView
           roundsValue={roundsValue}
@@ -334,41 +364,58 @@ export default function Task({
         />
       )}
 
-      {/* Láb: műveleti gombok a creator számára */}
       {editable && (
         <>
           {!editing && !isAnyReviewEditing && (
-            <div className="buttons-container">
+            <div className="task-actions">
               <button
-                className="custom-button"
+                className="action-button primary"
                 onClick={() => {
-                  setEditing(true);
-                  setEditingReviewId(null);
+                  setEditing(true)
+                  setEditingReviewId(null)
                 }}
               >
-                Edit
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Edit Task
               </button>
-              <button className="custom-button" onClick={handleDelete}>
-                Delete task
+              <button className="action-button danger" onClick={handleDelete}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                Delete Task
               </button>
             </div>
           )}
           {editing && (
-            <div className="buttons-container">
-              <button className="custom-button" onClick={handleSave}>
-                Save
+            <div className="task-actions">
+              <button className="action-button success" onClick={handleSave}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Save Changes
               </button>
-              <button className="custom-button" onClick={() => setEditing(false)}>
+              <button className="action-button secondary" onClick={() => setEditing(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
                 Cancel
               </button>
             </div>
           )}
-          {editable && activeRound && (
-            <div className="buttons-container">
-              {/* csak ha lejárt (nem ma) */}
+          {editable && !editing && activeRound && (
+            <div className="task-actions">
               {isBeforeToday(activeRound.deadline) && (
-                <button className="custom-button" onClick={activateNextRound}>
-                  Activate next round
+                <button className="action-button primary" onClick={activateNextRound}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="13 17 18 12 13 7" />
+                    <polyline points="6 17 11 12 6 7" />
+                  </svg>
+                  Activate Next Round
                 </button>
               )}
             </div>
@@ -376,5 +423,5 @@ export default function Task({
         </>
       )}
     </div>
-  );
+  )
 }
