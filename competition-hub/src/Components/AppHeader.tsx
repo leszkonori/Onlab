@@ -34,7 +34,7 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
       const creatorData: Notification[] = (await creatorResponse.json()).map((n: any) => ({
         ...n,
         type: "NEW_APPLICATION",
-        taskTitle: `${n.taskTitle} (Új jelentkezők)`,
+        taskTitle: `${n.taskTitle} (New applications)`,
         newApplicationsCount: n.newApplicationsCount,
       }))
 
@@ -42,7 +42,7 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
       const applicantData: Notification[] = (await applicantResponse.json()).map((n: any) => ({
         ...n,
         type: "NEW_REVIEW",
-        taskTitle: `${n.taskTitle} (Új bírálatok)`,
+        taskTitle: `${n.taskTitle} (New review)`,
         newApplicationsCount: n.newApplicationsCount,
       }))
 
@@ -52,7 +52,7 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
       const elimData: Notification[] = (await elimResponse.json()).map((n: any) => ({
         ...n,
         type: "ELIMINATION" as const,
-        taskTitle: `${n.taskTitle} (Eliminálva)`,
+        taskTitle: `${n.taskTitle} (Eliminated)`,
         newApplicationsCount: n.newApplicationsCount ?? 1,
       }))
 
@@ -61,7 +61,7 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
       )
       const roundData: Notification[] = (await roundRes.json()).map((n: any) => ({
         taskId: n.taskId,
-        taskTitle: `${n.taskTitle} (Új forduló nyílt)`,
+        taskTitle: `${n.taskTitle} (New round started)`,
         newApplicationsCount: n.newApplicationsCount ?? 1,
         type: "ROUND_ACTIVATED" as const,
       }))
