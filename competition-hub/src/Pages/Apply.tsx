@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import type { ApplicationType, RoundType, TaskType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
 import AppHeader from "../Components/AppHeader"
+import httpClient from "../HttpClient" // ⬅️ IMPORTÁLVA
 
 export default function Apply() {
   const { id } = useParams<{ id: string }>()
@@ -19,12 +20,11 @@ export default function Apply() {
   const { user, isAuthenticated, hasRole, logout } = useKeycloak()
 
   const fetchTask = () => {
-    fetch(`http://localhost:8081/api/tasks/${id}`)
+    // Axios használata a tokennel
+    httpClient.get(`/tasks/${id}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Request for task was unsuccessful")
-        return res.json()
-      })
-      .then((data) => {
+        const data = res.data // Axios esetén a válasz tartalom a .data property
+        
         const directApps = data.applications || []
         const roundApps = data.rounds?.flatMap((r: RoundType) => r.applications || []) || []
 
@@ -38,12 +38,54 @@ export default function Apply() {
         const combinedApplications = Array.from(uniqueMap.values())
         setTask({ ...data, applications: combinedApplications })
       })
-      .catch((err) => console.error("Error: ", err))
+      .catch((err) => {
+        console.error("Error: ", err)
+      })
   }
 
   useEffect(() => {
     if (id) fetchTask()
   }, [id])
+
+  // FÜGGVÉNY: Letöltés Bearer Token-nel (megoldja az <a> tag problémáját)
+  const handleDownload = async (applicationId: number) => {
+    try {
+        // Axios-szal kérjük le a fájlt, beállítva, hogy bináris adatot várunk (blob)
+        const response = await httpClient.get(`/applications/download/${applicationId}`, {
+            responseType: 'blob', 
+        });
+
+        // A fájlnév kinyerése a Content-Disposition fejlécből (ha a backend küldi)
+        const contentDisposition = response.headers['content-disposition'];
+        let filename = `application_${applicationId}.zip`; // Alapértelmezett fájlnév
+        if (contentDisposition) {
+            // Fájlnév kinyerése regexp-pel
+            const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
+            if (matches && matches[1]) {
+                filename = matches[1];
+            }
+        }
+        
+        // Blob létrehozása a kapott adatokból
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename); 
+        
+        // Letöltés elindítása
+        document.body.appendChild(link);
+        link.click();
+        
+        // Tisztítás
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error("Download error:", error);
+        alert("A fájl letöltése nem sikerült. Lehet, hogy nincs jogosultsága, vagy hálózati hiba történt.");
+    }
+  };
+  // VÉGE handleDownload
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
@@ -64,25 +106,19 @@ export default function Apply() {
     formData.append("keycloakUserName", user.username)
 
     try {
-      const res = await fetch(`http://localhost:8081/api/applications/${id}`, {
-        method: "POST",
-        body: formData,
-      })
+      // POST hívás a tokennel
+      const res = await httpClient.post(`/applications/${id}`, formData)
 
-      if (res.ok) {
-        setMessage("File uploaded successfully!")
-        alert("File uploaded successfully!")
-        fetchTask()
-        setFile(null)
-        setFileName("")
-      } else {
-        const errText = await res.text()
-        setMessage("Error: " + errText)
-        alert("Error: " + errText)
-      }
-    } catch (error) {
-      setMessage("Error occured during file upload")
-      alert("Error occured during file upload")
+      setMessage("File uploaded successfully!")
+      alert("File uploaded successfully!")
+      fetchTask()
+      setFile(null)
+      setFileName("")
+      
+    } catch (error: any) {
+      const errText = error.response?.data || "Error occured during file upload"
+      setMessage("Error: " + errText)
+      alert("Error: " + errText)
     }
   }
 
@@ -178,20 +214,18 @@ export default function Apply() {
             </div>
 
             <div className="status-actions">
-              <a
-                className="download-link"
-                href={`http://localhost:8081/api/applications/download/${myApplication.id}`}
-                download
+              {/* VÁLTOZTATÁS: A letöltő link gombra lett cserélve, ami hívja a handleDownload-ot */}
+              <button 
+                className="download-button"
+                onClick={() => handleDownload(myApplication.id)}
               >
-                <button className="download-button">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  Download Your Submission
-                </button>
-              </a>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download Your Submission
+              </button>
             </div>
 
             {renderMyReview()}

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import type { ApplicationType, TaskType } from "../types"
 import ListCard from "../Components/ListCard"
 import AppHeader from "../Components/AppHeader"
+import httpClient from "../HttpClient"
 
 export default function Profile() {
   const { user, isAuthenticated, hasRole, logout } = useKeycloak()
@@ -14,9 +15,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/tasks")
-      .then((res) => res.json())
-      .then((data) => setTasks(data))
+    httpClient("/tasks")
+      .then((res) => setTasks(res.data))
       .catch((err) => console.error("Error loading the tasks:", err))
       .finally(() => setLoading(false))
   }, [isAuthenticated, user?.username])
@@ -24,21 +24,21 @@ export default function Profile() {
   useEffect(() => {
     if (!user?.id) return
 
-    fetch(`http://localhost:8081/api/applications/by-user/${user.id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch applications")
-        return res.json()
-      })
-      .then((data: ApplicationType[]) => {
-        const taskMap = new Map<number, TaskType>()
+    httpClient.get(`/applications/by-user/${user.id}`)
+    .then((res) => {
+        // Axios automatikusan hibát dob nem-2xx státusz esetén, 
+        // így nincs szükség res.ok ellenőrzésre.
+        const data: ApplicationType[] = res.data; // Az Axios a választ res.data-ban adja
+
+        const taskMap = new Map<number, TaskType>();
 
         data.forEach((app) => {
-          if (app.task) {
-            taskMap.set(app.task.id, app.task)
-          } else if (app.round && app.round.task) {
-            taskMap.set(app.round.task.id, app.round.task)
-          }
-        })
+            if (app.task) {
+                taskMap.set(app.task.id, app.task);
+            } else if (app.round && app.round.task) {
+                taskMap.set(app.round.task.id, app.round.task);
+            }
+        });
 
         const uniqueTasks = Array.from(taskMap.values())
         setAppliedTasks(uniqueTasks)

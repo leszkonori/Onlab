@@ -5,6 +5,7 @@ import { useKeycloak } from "../KeycloakProvider"
 import { useState, useEffect, useRef } from "react"
 import { Bell, Plus, User, LogOut, Home } from "lucide-react"
 import "./AppHeader.css"
+import httpClient from "../HttpClient"
 
 interface Notification {
   taskId: number
@@ -30,36 +31,40 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
     }
 
     try {
-      const creatorResponse = await fetch(`http://localhost:8081/api/tasks/notifications/${creatorIdentifier}`)
-      const creatorData: Notification[] = (await creatorResponse.json()).map((n: any) => ({
+      // 1. Kérés: Új jelentkezők értesítései (tasks/notifications)
+      const creatorResponse = await httpClient.get(`/tasks/notifications/${creatorIdentifier}`)
+      const creatorData: Notification[] = creatorResponse.data.map((n: any) => ({
         ...n,
         type: "NEW_APPLICATION",
         taskTitle: `${n.taskTitle} (New applications)`,
         newApplicationsCount: n.newApplicationsCount,
       }))
 
-      const applicantResponse = await fetch(`http://localhost:8081/api/applications/notifications/${creatorIdentifier}`)
-      const applicantData: Notification[] = (await applicantResponse.json()).map((n: any) => ({
+      // 2. Kérés: Új bírálatok értesítései (applications/notifications)
+      const applicantResponse = await httpClient.get(`/applications/notifications/${creatorIdentifier}`)
+      const applicantData: Notification[] = applicantResponse.data.map((n: any) => ({
         ...n,
         type: "NEW_REVIEW",
-        taskTitle: `${n.taskTitle} (New review)`,
+        taskTitle: `${n.taskTitle} (New reviews)`,
         newApplicationsCount: n.newApplicationsCount,
       }))
 
-      const elimResponse = await fetch(
-        `http://localhost:8081/api/applications/elimination-notifications/${creatorIdentifier}`,
+      // 3. Kérés: Elimináció értesítései (applications/elimination-notifications)
+      const elimResponse = await httpClient.get(
+        `/applications/elimination-notifications/${creatorIdentifier}`,
       )
-      const elimData: Notification[] = (await elimResponse.json()).map((n: any) => ({
+      const elimData: Notification[] = elimResponse.data.map((n: any) => ({
         ...n,
         type: "ELIMINATION" as const,
         taskTitle: `${n.taskTitle} (Eliminated)`,
         newApplicationsCount: n.newApplicationsCount ?? 1,
       }))
 
-      const roundRes = await fetch(
-        `http://localhost:8081/api/applications/round-activation-notifications/${creatorIdentifier}`,
+      // 4. Kérés: Forduló aktiválás értesítései (applications/round-activation-notifications)
+      const roundRes = await httpClient.get(
+        `/applications/round-activation-notifications/${creatorIdentifier}`,
       )
-      const roundData: Notification[] = (await roundRes.json()).map((n: any) => ({
+      const roundData: Notification[] = roundRes.data.map((n: any) => ({
         taskId: n.taskId,
         taskTitle: `${n.taskTitle} (New round started)`,
         newApplicationsCount: n.newApplicationsCount ?? 1,
@@ -69,6 +74,7 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
       const mergedNotifications = [...creatorData, ...applicantData, ...elimData, ...roundData]
       setNotifications(mergedNotifications)
     } catch (error) {
+      // Axios hibakezelés: ez kapja el a hálózati, 401, 403 hibákat
       console.error("Error fetching notifications:", error)
       setNotifications([])
     }
@@ -80,14 +86,14 @@ export default function AppHeader({ mainPageButton = true }: { mainPageButton?: 
     if (creatorIdentifier) {
       try {
         if (type === "ELIMINATION") {
-          await fetch(
-            `http://localhost:8081/api/applications/tasks/${taskId}/touch-elimination-view/${creatorIdentifier}`,
-            { method: "PUT" },
+          // 5. Kérés: Elimináció megtekintve jelzése (tasks/{taskId}/touch-elimination-view)
+          await httpClient.put(
+            `/applications/tasks/${taskId}/touch-elimination-view/${creatorIdentifier}`,
           )
         } else if (type === "ROUND_ACTIVATED") {
-          await fetch(
-            `http://localhost:8081/api/applications/tasks/${taskId}/touch-round-activation-view/${creatorIdentifier}`,
-            { method: "PUT" },
+          // 6. Kérés: Forduló aktiválás megtekintve jelzése (tasks/{taskId}/touch-round-activation-view)
+          await httpClient.put(
+            `/applications/tasks/${taskId}/touch-round-activation-view/${creatorIdentifier}`,
           )
         }
       } catch (e) {

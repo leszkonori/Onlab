@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import "./Task.css"
 import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
+import httpClient from "../HttpClient" // ⬅️ ÚJ IMPORT
 
 // Views
 import TaskApplicantView from "./TaskApplicantView"
@@ -53,18 +54,16 @@ export default function Task({
 
   useEffect(() => {
     if (editable) {
-      fetch(`http://localhost:8081/api/tasks/${id}/touch-view`, { method: "PUT" }).catch(() => { })
+      // 1. Kérés: tasks/{id}/touch-view (PUT)
+      httpClient.put(`/tasks/${id}/touch-view`).catch(() => { })
     }
     if (!editable && user?.username) {
-      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-review-view/${user?.username}`, {
-        method: "PUT",
-      }).catch(() => { })
-      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-elimination-view/${user.username}`, {
-        method: "PUT",
-      }).catch(() => { })
-      fetch(`http://localhost:8081/api/applications/tasks/${id}/touch-round-activation-view/${user.username}`, {
-        method: "PUT",
-      }).catch(() => { })
+      // 2. Kérés: applications/tasks/{id}/touch-review-view/{user} (PUT)
+      httpClient.put(`/applications/tasks/${id}/touch-review-view/${user?.username}`).catch(() => { })
+      // 3. Kérés: applications/tasks/{id}/touch-elimination-view/{user} (PUT)
+      httpClient.put(`/applications/tasks/${id}/touch-elimination-view/${user.username}`).catch(() => { })
+      // 4. Kérés: applications/tasks/{id}/touch-round-activation-view/{user} (PUT)
+      httpClient.put(`/applications/tasks/${id}/touch-round-activation-view/${user.username}`).catch(() => { })
     }
   }, [id, editable, user?.username])
 
@@ -77,12 +76,15 @@ export default function Task({
   useEffect(() => {
     async function loadEliminated() {
       try {
-        const res = await fetch(`http://localhost:8081/api/tasks/${id}`)
-        if (!res.ok) return
-        const taskJson = await res.json()
+        // 5. Kérés: tasks/{id} (GET)
+        const res = await httpClient.get(`/tasks/${id}`)
+        const taskJson = res.data
         setEliminatedApplicants(taskJson.eliminatedApplicants ?? [])
-      } catch (e) {
-        console.error("Failed to load eliminated applicants", e)
+      } catch (e: any) {
+        // Axios dob hibát, ha a válasz nem 2xx. Ha a 404-et is elkapjuk, az is OK.
+        if (e.response?.status !== 404) {
+            console.error("Failed to load eliminated applicants", e)
+        }
       }
     }
     loadEliminated()
@@ -109,11 +111,15 @@ export default function Task({
     formData.append("keycloakUserName", user.username)
 
     try {
-      const response = await fetch(`http://localhost:8081/api/applications/${id}/round/${roundId}`, {
-        method: "POST",
-        body: formData,
-      })
-      const result = await response.text()
+      // 6. Kérés: applications/{id}/round/{roundId} (POST FormData)
+      // Mivel FormData-t küldünk, a Content-Type-ot a böngésző állítja be (multipart/form-data).
+      // A tokent az httpClient automatikusan hozzáadja.
+      const response = await httpClient.post(
+        `/applications/${id}/round/${roundId}`, 
+        formData
+      )
+      
+      const result = response.data // Axios esetén a válasz tartalmát a data property tartalmazza
       alert(result)
       window.location.reload()
     } catch (e) {
@@ -142,13 +148,8 @@ export default function Task({
         ...(cleanedRounds.length === 0 ? { applicationDeadline: (dateValue || "").slice(0, 10) } : {}),
       }
 
-      const response = await fetch(`http://localhost:8081/api/tasks/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) throw new Error("Failed to update task")
+      // 7. Kérés: tasks/{id} (PUT JSON)
+      const response = await httpClient.put(`/tasks/${id}`, payload)
 
       alert("Task updated successfully!")
       setEditing(false)
@@ -161,12 +162,8 @@ export default function Task({
 
   async function handleSaveReview(appId: number, text: string | null, points: number | null) {
     try {
-      const response = await fetch(`http://localhost:8081/api/applications/${appId}/review`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, points }),
-      })
-      if (!response.ok) throw new Error("Failed to update review")
+      // 8. Kérés: applications/{appId}/review (PUT JSON)
+      const response = await httpClient.put(`/applications/${appId}/review`, { text, points })
 
       alert("Review updated successfully!")
       setEditingReviewId(null)
@@ -210,22 +207,16 @@ export default function Task({
   async function saveElimination() {
     const updated = Array.from(new Set([...eliminatedApplicants, ...Array.from(selectedToEliminate)]))
     try {
-      const res = await fetch(`http://localhost:8081/api/tasks/${id}/eliminate-applicants`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      })
-      if (res.ok) {
-        setEliminatedApplicants(updated)
-        setSelectedToEliminate(new Set())
-        alert("Eliminálás mentve. A kijelöltek a következő fordulókra már nem pályázhatnak.")
-      } else {
-        const msg = await res.text()
-        alert("Nem sikerült menteni: " + msg)
-      }
-    } catch (e) {
+      // 9. Kérés: tasks/{id}/eliminate-applicants (PUT JSON)
+      const res = await httpClient.put(`/tasks/${id}/eliminate-applicants`, updated)
+      
+      setEliminatedApplicants(updated)
+      setSelectedToEliminate(new Set())
+      alert("Eliminálás mentve. A kijelöltek a következő fordulókra már nem pályázhatnak.")
+    } catch (e: any) {
       console.error(e)
-      alert("Hálózati hiba az eliminálás mentése közben.")
+      const msg = e.response?.data || "Hálózati hiba az eliminálás mentése közben."
+      alert("Nem sikerült menteni: " + msg)
     }
   }
 
@@ -233,31 +224,31 @@ export default function Task({
     const confirmed = window.confirm("Are you sure you want to delete this task?")
     if (!confirmed) return
     try {
-      const response = await fetch(`http://localhost:8081/api/tasks/${id}`, { method: "DELETE" })
-      if (response.ok) {
-        alert("Task deleted successfully!")
-        navigate("/")
-      } else {
-        alert("Error: Could not delete the task!")
-      }
-    } catch (error) {
+      // 10. Kérés: tasks/{id} (DELETE)
+      const response = await httpClient.delete(`/tasks/${id}`)
+      
+      alert("Task deleted successfully!")
+      navigate("/")
+    } catch (error: any) {
       console.error("Error deleting task:", error)
-      alert("There was an error while deleting the task.")
+      alert("Error: Could not delete the task! " + (error.response?.data || error.message))
     }
   }
 
   async function activateNextRound() {
-    const res = await fetch(`http://localhost:8081/api/tasks/${id}/activate-next`, { method: "PUT" })
-    if (res.ok) {
-      alert("Next round activated.")
-      onSave?.()
-    } else {
-      const txt = await res.text()
-      alert("Cannot activate next round: " + txt)
+    // 11. Kérés: tasks/{id}/activate-next (PUT)
+    try {
+        const res = await httpClient.put(`/tasks/${id}/activate-next`)
+        alert("Next round activated.")
+        onSave?.()
+    } catch (e: any) {
+        const txt = e.response?.data || "Ismeretlen hiba."
+        alert("Cannot activate next round: " + txt)
     }
   }
 
   return (
+// ... (JSX rész változatlan)
     <div className="task-container">
       <div className="task-header">
         <div className="task-header-icon">

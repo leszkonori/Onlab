@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import type { TaskType } from "../types"
 import "./ActiveTasks.css"
 import { Loader2, AlertCircle } from "lucide-react"
+import httpClient from "../HttpClient"
 
 export default function ActiveTasks() {
   const [tasks, setTasks] = useState<TaskType[]>([])
@@ -12,10 +13,9 @@ export default function ActiveTasks() {
 
   useEffect(() => {
     setLoading(true)
-    fetch("http://localhost:8081/api/tasks")
-      .then((res) => res.json())
-      .then((data) => {
-        setTasks(data)
+    httpClient.get("/tasks")
+      .then((res) => {
+        setTasks(res.data) // Axios esetén res.data tartalmazza a JSON választ
         setLoading(false)
       })
       .catch((err) => {

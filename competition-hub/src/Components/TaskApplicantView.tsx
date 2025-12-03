@@ -5,6 +5,7 @@ import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
 import { formatDateOnly } from "./TaskUtils"
 import "./TaskApplicantView.css"
+import httpClient from "../HttpClient" // ⬅️ 1. HOZZÁADVA: HttpClient a tokennel ellátott letöltéshez
 
 /**
  * Pályázó nézet komponens.
@@ -28,6 +29,42 @@ export default function TaskApplicantView({
   evaluationType: EvaluationType
 }) {
   const { user } = useKeycloak()
+
+  // ⬅️ 2. HOZZÁADVA: Helyben definiált handleDownload függvény
+  const handleDownload = async (applicationId: number) => {
+    try {
+        const response = await httpClient.get(`/applications/download/${applicationId}`, {
+            responseType: 'blob', // A bináris adatok kéréséhez
+        });
+
+        // Fájlnév kinyerése a Content-Disposition fejlécből (ha a backend küldi)
+        const contentDisposition = response.headers['content-disposition'];
+        let filename = `submission_${applicationId}.zip`;
+        if (contentDisposition) {
+            const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
+            if (matches && matches[1]) {
+                filename = matches[1];
+            }
+        }
+        
+        // Letöltés kezdeményezése a Blob-bal
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename);
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error("Download error:", error);
+        alert("A fájl letöltése nem sikerült. Kérem, ellenőrizze a jogosultságokat.");
+    }
+  };
+  // ⬅️ VÉGE handleDownload
 
   if (roundsValue.length === 0) {
     return null
@@ -117,27 +154,25 @@ export default function TaskApplicantView({
                   </div>
 
                   <div className="status-actions">
-                    <a
-                      className="download-link"
-                      href={`http://localhost:8081/api/applications/download/${userApplicationForRound?.id}`}
-                      download
+                    {/* ⬅️ 3. MÓDOSÍTVA: Natív <a> helyett gomb a handleDownload hívásával */}
+                    <button
+                      className="download-button"
+                      onClick={() => userApplicationForRound?.id && handleDownload(userApplicationForRound.id)}
                     >
-                      <button className="download-button">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                        Download Your Submission
-                      </button>
-                    </a>
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      Download Your Submission
+                    </button>
                   </div>
 
                   {(userApplicationForRound?.reviewText || userApplicationForRound?.reviewPoints != null) && (

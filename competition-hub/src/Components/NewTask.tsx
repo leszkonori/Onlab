@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useKeycloak } from "../KeycloakProvider"
 import type { EvaluationType, RoundType } from "../types"
 import "./NewTask.css"
+import httpClient from "../HttpClient"
 
 export default function NewTask() {
   const { user } = useKeycloak()
@@ -49,29 +50,32 @@ export default function NewTask() {
     }
 
     try {
-      const res = await fetch("http://localhost:8081/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(task),
-      })
+      // Axios használata: a token automatikusan hozzáadódik.
+      // Az URL csak az relatív útvonal.
+      // A task objektumot közvetlenül a második argumentumként adjuk át, 
+      // az Axios automatikusan JSON.stringify-t alkalmaz.
+      const res = await httpClient.post("/tasks", task);
 
-      if (!res.ok) throw new Error("Save unsuccessful")
+      // Axios automatikusan hibát dob nem 2xx státusz esetén,
+      // így az 'if (!res.ok) throw new Error("Save unsuccessful")' rész feleslegessé válik.
 
-      await res.json()
-      alert("Task created successfully!")
+      // Feltételezve, hogy a backend visszaad egy JSON választ
+      // const responseData = res.data; 
+
+      alert("Task created successfully!");
 
       // Reset form
-      setTitle("")
-      setDescription("")
-      setDeadline("")
-      setRounds([])
-      setEvaluationType("TEXT")
-    } catch (err) {
-      alert("Error: " + (err as Error).message)
+      setTitle("");
+      setDescription("");
+      setDeadline("");
+      setRounds([]);
+      setEvaluationType("TEXT");
+    } catch (error) {
+      // Axios hiba esetén az error.response.data vagy error.message tartalmazza a részleteket.
+      const errorMessage = (error as any).response?.data?.message || (error as Error).message;
+      alert("Error: " + errorMessage);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
