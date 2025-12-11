@@ -26,9 +26,7 @@ export default function Profile() {
 
     httpClient.get(`/applications/by-user/${user.id}`)
     .then((res) => {
-        // Axios automatikusan hibát dob nem-2xx státusz esetén, 
-        // így nincs szükség res.ok ellenőrzésre.
-        const data: ApplicationType[] = res.data; // Az Axios a választ res.data-ban adja
+        const data: ApplicationType[] = res.data;
 
         const taskMap = new Map<number, TaskType>();
 

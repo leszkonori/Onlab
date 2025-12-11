@@ -16,7 +16,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t.id, t.title, COUNT(a) " +
             "FROM Task t JOIN t.applications a " +
             "WHERE t.creator = :creator " +
-            // JAVÍTOTT FELTÉTEL:
             "AND (t.creatorLastViewedAt IS NULL OR a.applicationDate > t.creatorLastViewedAt)" +
             "GROUP BY t.id, t.title HAVING COUNT(a) > 0")
     List<Object[]> getTasksWithNewApplicationCount(@Param("creator") String creator);

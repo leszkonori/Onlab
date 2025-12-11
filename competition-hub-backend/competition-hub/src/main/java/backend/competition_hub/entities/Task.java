@@ -50,11 +50,10 @@ public class Task {
     @Column(name = "creator_last_viewed_at")
     private LocalDateTime creatorLastViewedAt;
 
-    // ÚJ MEZŐ: Keycloak felhasználónevek listája azoknak, akik kiestek a versenyből
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_eliminated_applicants", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "keycloak_username")
-    private List<String> eliminatedApplicants; // Lista a kiesett userek username-jeiről
+    private List<String> eliminatedApplicants;
 
     @PrePersist
     @PreUpdate

@@ -5,7 +5,7 @@ import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
 import { formatDateOnly } from "./TaskUtils"
 import "./TaskApplicantView.css"
-import httpClient from "../HttpClient" // ⬅️ 1. HOZZÁADVA: HttpClient a tokennel ellátott letöltéshez
+import httpClient from "../HttpClient"
 
 /**
  * Pályázó nézet komponens.
@@ -30,14 +30,12 @@ export default function TaskApplicantView({
 }) {
   const { user } = useKeycloak()
 
-  // ⬅️ 2. HOZZÁADVA: Helyben definiált handleDownload függvény
   const handleDownload = async (applicationId: number) => {
     try {
         const response = await httpClient.get(`/applications/download/${applicationId}`, {
-            responseType: 'blob', // A bináris adatok kéréséhez
+            responseType: 'blob',
         });
 
-        // Fájlnév kinyerése a Content-Disposition fejlécből (ha a backend küldi)
         const contentDisposition = response.headers['content-disposition'];
         let filename = `submission_${applicationId}.zip`;
         if (contentDisposition) {
@@ -47,7 +45,6 @@ export default function TaskApplicantView({
             }
         }
         
-        // Letöltés kezdeményezése a Blob-bal
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
@@ -64,7 +61,6 @@ export default function TaskApplicantView({
         alert("A fájl letöltése nem sikerült. Kérem, ellenőrizze a jogosultságokat.");
     }
   };
-  // ⬅️ VÉGE handleDownload
 
   if (roundsValue.length === 0) {
     return null
@@ -154,7 +150,6 @@ export default function TaskApplicantView({
                   </div>
 
                   <div className="status-actions">
-                    {/* ⬅️ 3. MÓDOSÍTVA: Natív <a> helyett gomb a handleDownload hívásával */}
                     <button
                       className="download-button"
                       onClick={() => userApplicationForRound?.id && handleDownload(userApplicationForRound.id)}

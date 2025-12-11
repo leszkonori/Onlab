@@ -56,7 +56,6 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public Task createTask(Task task) {
         if (task.getRounds() != null && !task.getRounds().isEmpty()) {
-            // biztosítsuk a determinisztikus sorrendet (pl. határidő szerint)
             task.getRounds().sort(Comparator.comparing(Round::getDeadline));
             for (int i = 0; i < task.getRounds().size(); i++) {
                 Round round = task.getRounds().get(i);
@@ -104,7 +103,6 @@ public class TaskServiceImpl implements TaskService {
     public ResponseEntity<List<ApplicationNotificationDTO>> getTasksWithNewApplicationCounts(String creator) {
         List<Object[]> results = taskRepository.getTasksWithNewApplicationCount(creator);
 
-        // Konvertáljuk az Object[] listát ApplicationNotificationDTO listává
         List<ApplicationNotificationDTO> notifications = results.stream()
                 .map(result -> new ApplicationNotificationDTO(
                         ((Number) result[0]).longValue(),
@@ -143,7 +141,6 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public ResponseEntity<Object> activateNextRound(Long taskId) {
         return (ResponseEntity<Object>) taskRepository.findById(taskId).map(task -> {
-            // roundok betöltése a taskhoz (ha nem lenne)
             List<Round> rounds = roundRepository.findByTaskId(taskId);
             if (rounds == null || rounds.isEmpty()) {
                 return ResponseEntity.badRequest().body("No rounds for this task.");

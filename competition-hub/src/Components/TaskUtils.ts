@@ -1,12 +1,10 @@
-import { RoundType } from '../types'; // Feltételezve, hogy a types.ts-ben van a RoundType definíció.
+import { RoundType } from '../types';
 
-/** Biztonságos parse 'YYYY-MM-DD' → helyi éjfél, zónaeltolás nélkül. */
 export function parseLocalDate(d: string): Date {
   const [y, m, day] = (d || '').slice(0, 10).split('-').map(Number);
   return new Date(y || 1970, (m || 1) - 1, day || 1);
 }
 
-/** Csak dátum formázása (óra nélkül). */
 export function formatDateOnly(localDateString: string): string {
   const d = parseLocalDate(localDateString);
   return new Intl.DateTimeFormat('hu-HU', {
@@ -16,7 +14,6 @@ export function formatDateOnly(localDateString: string): string {
   }).format(d);
 }
 
-/** Dátum + idő formázása – pl. Application.applicationDate-hez. */
 export function formatDate(isoString: string | number | Date): string {
   const d = new Date(isoString);
   return new Intl.DateTimeFormat('hu-HU', {
@@ -28,7 +25,6 @@ export function formatDate(isoString: string | number | Date): string {
   }).format(d);
 }
 
-/** Következő (ma vagy jövőbeli) round dátuma LocalDate stringként, ha van. */
 export function getNextUpcomingDeadline(rs: RoundType[]): string | null {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

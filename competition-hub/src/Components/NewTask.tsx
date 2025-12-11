@@ -50,18 +50,7 @@ export default function NewTask() {
     }
 
     try {
-      // Axios használata: a token automatikusan hozzáadódik.
-      // Az URL csak az relatív útvonal.
-      // A task objektumot közvetlenül a második argumentumként adjuk át, 
-      // az Axios automatikusan JSON.stringify-t alkalmaz.
       const res = await httpClient.post("/tasks", task);
-
-      // Axios automatikusan hibát dob nem 2xx státusz esetén,
-      // így az 'if (!res.ok) throw new Error("Save unsuccessful")' rész feleslegessé válik.
-
-      // Feltételezve, hogy a backend visszaad egy JSON választ
-      // const responseData = res.data; 
-
       alert("Task created successfully!");
 
       // Reset form
@@ -71,7 +60,6 @@ export default function NewTask() {
       setRounds([]);
       setEvaluationType("TEXT");
     } catch (error) {
-      // Axios hiba esetén az error.response.data vagy error.message tartalmazza a részleteket.
       const errorMessage = (error as any).response?.data?.message || (error as Error).message;
       alert("Error: " + errorMessage);
     } finally {

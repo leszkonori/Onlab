@@ -11,7 +11,6 @@ import java.util.Optional;
 
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
-    // Egy taskhoz tartozó összes jelentkezést lekérni
     List<Application> findByTaskId(Long taskId);
 
     List<Application> findByKeycloakUserId(String keycloakUserId);

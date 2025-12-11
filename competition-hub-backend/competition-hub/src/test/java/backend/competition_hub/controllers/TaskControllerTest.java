@@ -44,17 +44,13 @@ class TaskControllerTest {
 
     @Test
     void getTaskById_ShouldReturn404_WhenTaskDoesNotExist() throws Exception {
-        // --- GIVEN ---
         Long nonExistentId = 999L;
 
-        // Azt mondjuk a Service mocknak, hogy erre az ID-ra adjon vissza 404-et (NotFound)
-        //
         when(taskService.getTaskById(nonExistentId))
                 .thenReturn(org.springframework.http.ResponseEntity.notFound().build());
 
-        // --- WHEN & THEN ---
         mockMvc.perform(get("/api/tasks/{id}", nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound()); // Elvárjuk a 404-es státuszkódot
+                .andExpect(status().isNotFound());
     }
 }

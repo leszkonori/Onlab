@@ -1,6 +1,5 @@
 package backend.competition_hub.dtos;
 
-// Lombok használatával egyszerűbb:
 import lombok.Data;
 
 @Data

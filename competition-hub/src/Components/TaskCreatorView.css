@@ -14,7 +14,6 @@
   flex-shrink: 0;
 }
 
-/* Rounds Grid - changed to flex column so rounds take full width */
 .rounds-grid {
   display: flex;
   flex-direction: column;
@@ -46,7 +45,6 @@
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
 }
 
-/* Made round header clickable and added styles for chevron */
 .round-header-section {
   display: flex;
   justify-content: space-between;
@@ -82,7 +80,6 @@
   color: #1f2937;
 }
 
-/* Added chevron icon styles with rotation animation */
 .chevron-icon {
   color: #6b7280;
   transition: transform 0.3s ease, color 0.2s ease;
@@ -161,7 +158,6 @@
   padding-left: 26px;
 }
 
-/* New section for applications within a round */
 .round-applications-section {
   margin-top: 24px;
   padding-top: 24px;
@@ -183,7 +179,6 @@
   flex-shrink: 0;
 }
 
-/* Applications Grid - changed to grid so multiple applications fit in one row */
 .applications-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -209,7 +204,6 @@
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
 }
 
-/* Added eliminated state for application cards */
 .application-card.eliminated {
   background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
   border-color: #fecaca;
@@ -232,7 +226,6 @@
   color: #1f2937;
 }
 
-/* Added eliminated badge styling */
 .eliminated-badge {
   padding: 4px 10px;
   font-size: 12px;
@@ -334,7 +327,6 @@
   text-decoration: none;
 }
 
-/* Added elimination section styling within application cards */
 .elimination-section {
   margin-top: 20px;
   padding-top: 20px;
@@ -387,8 +379,6 @@
   margin-top: 20px;
   border-top: 2px solid #e5e7eb;
 }
-
-/* Removed old elimination grid and card styles as they're no longer needed */
 
 /* Empty State */
 .empty-state {

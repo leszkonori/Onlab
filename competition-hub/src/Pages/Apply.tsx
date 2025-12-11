@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 import type { ApplicationType, RoundType, TaskType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
 import AppHeader from "../Components/AppHeader"
-import httpClient from "../HttpClient" // ⬅️ IMPORTÁLVA
+import httpClient from "../HttpClient"
 
 export default function Apply() {
   const { id } = useParams<{ id: string }>()
@@ -20,10 +20,9 @@ export default function Apply() {
   const { user, isAuthenticated, hasRole, logout } = useKeycloak()
 
   const fetchTask = () => {
-    // Axios használata a tokennel
     httpClient.get(`/tasks/${id}`)
       .then((res) => {
-        const data = res.data // Axios esetén a válasz tartalom a .data property
+        const data = res.data
         
         const directApps = data.applications || []
         const roundApps = data.rounds?.flatMap((r: RoundType) => r.applications || []) || []
@@ -47,36 +46,29 @@ export default function Apply() {
     if (id) fetchTask()
   }, [id])
 
-  // FÜGGVÉNY: Letöltés Bearer Token-nel (megoldja az <a> tag problémáját)
   const handleDownload = async (applicationId: number) => {
     try {
-        // Axios-szal kérjük le a fájlt, beállítva, hogy bináris adatot várunk (blob)
         const response = await httpClient.get(`/applications/download/${applicationId}`, {
             responseType: 'blob', 
         });
 
-        // A fájlnév kinyerése a Content-Disposition fejlécből (ha a backend küldi)
         const contentDisposition = response.headers['content-disposition'];
-        let filename = `application_${applicationId}.zip`; // Alapértelmezett fájlnév
+        let filename = `application_${applicationId}.zip`;
         if (contentDisposition) {
-            // Fájlnév kinyerése regexp-pel
             const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
             if (matches && matches[1]) {
                 filename = matches[1];
             }
         }
         
-        // Blob létrehozása a kapott adatokból
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', filename); 
         
-        // Letöltés elindítása
         document.body.appendChild(link);
         link.click();
         
-        // Tisztítás
         link.remove();
         window.URL.revokeObjectURL(url);
 
@@ -85,7 +77,6 @@ export default function Apply() {
         alert("A fájl letöltése nem sikerült. Lehet, hogy nincs jogosultsága, vagy hálózati hiba történt.");
     }
   };
-  // VÉGE handleDownload
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
@@ -106,7 +97,6 @@ export default function Apply() {
     formData.append("keycloakUserName", user.username)
 
     try {
-      // POST hívás a tokennel
       const res = await httpClient.post(`/applications/${id}`, formData)
 
       setMessage("File uploaded successfully!")
@@ -214,7 +204,6 @@ export default function Apply() {
             </div>
 
             <div className="status-actions">
-              {/* VÁLTOZTATÁS: A letöltő link gombra lett cserélve, ami hívja a handleDownload-ot */}
               <button 
                 className="download-button"
                 onClick={() => handleDownload(myApplication.id)}

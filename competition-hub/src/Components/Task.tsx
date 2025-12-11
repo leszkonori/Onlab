@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import "./Task.css"
 import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { useKeycloak } from "../KeycloakProvider"
-import httpClient from "../HttpClient" // ⬅️ ÚJ IMPORT
+import httpClient from "../HttpClient"
 
 // Views
 import TaskApplicantView from "./TaskApplicantView"
@@ -81,7 +81,6 @@ export default function Task({
         const taskJson = res.data
         setEliminatedApplicants(taskJson.eliminatedApplicants ?? [])
       } catch (e: any) {
-        // Axios dob hibát, ha a válasz nem 2xx. Ha a 404-et is elkapjuk, az is OK.
         if (e.response?.status !== 404) {
             console.error("Failed to load eliminated applicants", e)
         }
@@ -111,15 +110,13 @@ export default function Task({
     formData.append("keycloakUserName", user.username)
 
     try {
-      // 6. Kérés: applications/{id}/round/{roundId} (POST FormData)
-      // Mivel FormData-t küldünk, a Content-Type-ot a böngésző állítja be (multipart/form-data).
-      // A tokent az httpClient automatikusan hozzáadja.
+      // 6. Kérés: applications/{id}/round/{roundId}
       const response = await httpClient.post(
         `/applications/${id}/round/${roundId}`, 
         formData
       )
       
-      const result = response.data // Axios esetén a válasz tartalmát a data property tartalmazza
+      const result = response.data
       alert(result)
       window.location.reload()
     } catch (e) {
@@ -207,7 +204,6 @@ export default function Task({
   async function saveElimination() {
     const updated = Array.from(new Set([...eliminatedApplicants, ...Array.from(selectedToEliminate)]))
     try {
-      // 9. Kérés: tasks/{id}/eliminate-applicants (PUT JSON)
       const res = await httpClient.put(`/tasks/${id}/eliminate-applicants`, updated)
       
       setEliminatedApplicants(updated)
@@ -248,7 +244,6 @@ export default function Task({
   }
 
   return (
-// ... (JSX rész változatlan)
     <div className="task-container">
       <div className="task-header">
         <div className="task-header-icon">

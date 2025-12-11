@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(ApplicationController.class)
-@AutoConfigureMockMvc(addFilters = false) // Security kikapcsolása teszthez
+@AutoConfigureMockMvc(addFilters = false)
 class ApplicationControllerTest {
 
     @Autowired
@@ -29,8 +29,6 @@ class ApplicationControllerTest {
 
     @Test
     void handleFileUploadForRound_ShouldDelegateToService() throws Exception {
-        // --- GIVEN ---
-        // Létrehozunk egy "kamu" fájlt
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "test.zip",
@@ -38,13 +36,10 @@ class ApplicationControllerTest {
                 "dummy content".getBytes()
         );
 
-        // Mockoljuk a Service választ
         when(applicationService.handleFileUploadForRound(
                 eq(1L), eq(2L), any(), eq("uid123"), eq("student1")
         )).thenReturn(ResponseEntity.ok("Upload success"));
 
-        // --- WHEN & THEN ---
-        // Szimuláljuk a Multipart POST kérést
         mockMvc.perform(multipart("/api/applications/{taskId}/round/{roundId}", 1L, 2L)
                         .file(file)
                         .param("keycloakUserId", "uid123")
@@ -52,7 +47,6 @@ class ApplicationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Upload success"));
 
-        // Ellenőrizzük, hogy a Controller tényleg átadta-e a fájlt a Service-nek
         verify(applicationService).handleFileUploadForRound(
                 eq(1L), eq(2L), any(), eq("uid123"), eq("student1")
         );

@@ -1,16 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react" // JAVÍTVA: => "react" helyett from "react"
+import { useState, useEffect } from "react"
 import type React from "react"
 import type { ApplicationType, EvaluationType, RoundType } from "../types"
 import { formatDate } from "./TaskUtils"
 import "./TaskCreatorView.css"
 import httpClient from "../HttpClient"
 
-/**
- * Task Létrehozó/Szerkesztő nézet komponens.
- * Megjeleníti a fordulókat és a hozzájuk tartozó pályázatokat fordulónként csoportosítva.
- */
 export default function TaskCreatorView({
   roundsValue,
   applicationStates,
@@ -61,14 +57,12 @@ export default function TaskCreatorView({
   }, [activeRound?.id])
 
   const getApplicationsForRound = (roundId: number | undefined) => {
-    // A sima (forduló nélküli) pályázatoknak nincs round.id-je, ezt itt nem kezeljük
     if (!roundId) return []
     return applicationStates.filter((app) => app.round?.id === roundId)
   }
   
-  // ÚJ FÜGGVÉNY: A sima (forduló nélküli) pályázatok lekérése
+  // A sima (forduló nélküli) pályázatok lekérése
   const getApplicationsWithoutRound = () => {
-    // Szűrjük azokat a pályázatokat, amelyeknek nincs round objektuma
     return applicationStates.filter((app) => !app.round)
   }
   
@@ -78,33 +72,27 @@ export default function TaskCreatorView({
 
   const handleDownload = async (applicationId: number) => {
     try {
-        // Axios-szal kérjük le a fájlt, beállítva, hogy bináris adatot várunk (blob)
         const response = await httpClient.get(`/applications/download/${applicationId}`, {
             responseType: 'blob', 
         });
 
-        // A fájlnév kinyerése a Content-Disposition fejlécből (ha a backend küldi)
         const contentDisposition = response.headers['content-disposition'];
-        let filename = `application_${applicationId}.zip`; // Alapértelmezett fájlnév
+        let filename = `application_${applicationId}.zip`;
         if (contentDisposition) {
-            // Fájlnév kinyerése regexp-pel
             const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
             if (matches && matches[1]) {
                 filename = matches[1];
             }
         }
         
-        // Blob létrehozása a kapott adatokból
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', filename); 
         
-        // Letöltés elindítása
         document.body.appendChild(link);
         link.click();
         
-        // Tisztítás
         link.remove();
         window.URL.revokeObjectURL(url);
 
@@ -113,14 +101,11 @@ export default function TaskCreatorView({
         alert("A fájl letöltése nem sikerült. Lehet, hogy nincs jogosultsága, vagy hálózati hiba történt.");
     }
   };
-  // VÉGE handleDownload
 
-  
-  // ÚJ FÜGGVÉNY: Egyetlen pályázat kártyájának megjelenítése (segít elkerülni a kódduplikációt)
   const renderApplicationCard = (application: ApplicationType, appIndex: number, isRoundActive: boolean) => {
     const isEliminated = eliminatedApplicants.includes(application.keycloakUserName)
     const isSelectedForElimination = selectedToEliminate.has(application.keycloakUserName)
-    const isEditable = !editing && !isEliminated // Csak akkor szerkeszthető, ha nincs szerkesztő módban és nincs eliminálva
+    const isEditable = !editing && !isEliminated
     
     // Ideiglenesen beállítjuk a review ID-t 0-ra, ha nincs forduló
     const appId = application.id
@@ -213,9 +198,8 @@ export default function TaskCreatorView({
 
             {/* Action Buttons */}
             <div className="application-actions">
-                {/* JAVÍTVA: Natív <a> tag helyett gombot használunk, ami a propként kapott függvényt hívja */}
                 <button
-                    onClick={() => handleDownload(appId)} // ⬅️ VÁLTOZTATÁS: handleDownload hívása
+                    onClick={() => handleDownload(appId)}
                     className="action-button secondary"
                 >
                     <svg
@@ -303,7 +287,6 @@ export default function TaskCreatorView({
         </div>
     )
   }
-  // VÉGE renderApplicationCard
 
   const roundApplications = getApplicationsForRound(activeRound?.id)
   const isExpanded = expandedRoundId === activeRound?.id
@@ -311,9 +294,6 @@ export default function TaskCreatorView({
 
   return (
     <>
-      {/* ---------------------------------------------------- */}
-      {/* ÚJ BLOKK: ALAP (FORDULÓ NÉLKÜLI) PÁLYÁZATOK MEGJELENÍTÉSE */}
-      {/* ---------------------------------------------------- */}
       {roundsValue.length === 0 && nonRoundApplications.length > 0 && (
         <div className="applications-container mt-8">
           <h3 className="section-title">
@@ -327,11 +307,10 @@ export default function TaskCreatorView({
           </h3>
           <div className="applications-grid">
             {nonRoundApplications.map((app, index) =>
-              renderApplicationCard(app, index, false) // isRoundActive: false
+              renderApplicationCard(app, index, false)
             )}
           </div>
           
-          {/* Mivel nincs forduló, ide kell tenni a globális elimináció mentés gombot, ha van kijelölt */}
           {selectedToEliminate.size > 0 && (
             <div className="elimination-actions">
               <button className="action-button danger" onClick={saveElimination}>
@@ -353,9 +332,6 @@ export default function TaskCreatorView({
         </div>
       )}
       
-      {/* ---------------------------------------------------- */}
-      {/* EREDETI BLOKK: FORDULÓK ÉS HOZZÁJUK TARTOZÓ PÁLYÁZATOK */}
-      {/* ---------------------------------------------------- */}
       {roundsValue.length > 0 && (
         <div className="rounds-container">
           <h3 className="section-title">
@@ -489,11 +465,10 @@ export default function TaskCreatorView({
                           </h4>
                           <div className="applications-grid">
                             {roundApplications.map((application, appIndex) => (
-                              renderApplicationCard(application, appIndex, isActive) // isRoundActive: isActive
+                              renderApplicationCard(application, appIndex, isActive)
                             ))}
                           </div>
 
-                          {/* Save Elimination Button for Active Round */}
                           {isActive && selectedToEliminate.size > 0 && (
                             <div className="elimination-actions">
                               <button className="action-button danger" onClick={saveElimination}>
@@ -523,7 +498,6 @@ export default function TaskCreatorView({
         </div>
       )}
 
-      {/* Üres állapot: ha nincs forduló és nincs pályázat */}
       {roundsValue.length === 0 && nonRoundApplications.length === 0 && (
         <div className="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -536,7 +510,6 @@ export default function TaskCreatorView({
         </div>
       )}
 
-      {/* Üzenet, ha van forduló, de még egyetlen fordulóhoz sincs beadás */}
       {roundsValue.length > 0 && applicationStates.length === 0 && (
         <div className="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

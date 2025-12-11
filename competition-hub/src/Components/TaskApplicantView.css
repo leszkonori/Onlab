@@ -414,7 +414,6 @@
     font-size: 14px;
   }
 
-  /* Updated responsive styles for new upload classes */
   .applicant-round-card .upload-header {
     flex-direction: column;
     align-items: flex-start;

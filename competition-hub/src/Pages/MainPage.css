@@ -1,10 +1,8 @@
-/* Modern page container with smooth background */
 .page-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
-/* Hero section with gradient and modern typography */
 .page-hero {
   background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
   padding: 60px 40px;

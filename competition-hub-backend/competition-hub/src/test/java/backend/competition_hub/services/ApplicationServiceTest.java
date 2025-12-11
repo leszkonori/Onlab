@@ -64,7 +64,6 @@ class ApplicationServiceTest {
         Long appId = 5L;
 
         Task task = new Task();
-        // A feladat típusa: POINTS (tehát számít a pontszám)
         task.setEvaluationType(backend.competition_hub.EvaluationType.POINTS);
 
         backend.competition_hub.entities.Application app = new backend.competition_hub.entities.Application();
@@ -72,19 +71,14 @@ class ApplicationServiceTest {
 
         when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
 
-        // A request body-ban 12 pontot küldünk (ami > 10)
         java.util.Map<String, String> body = new java.util.HashMap<>();
         body.put("points", "12");
 
-        // --- WHEN ---
         ResponseEntity<backend.competition_hub.entities.Application> response =
                 applicationService.updateReview(appId, body);
 
-        // --- THEN ---
-        // 400 Bad Request-et várunk
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
-        // Ellenőrizzük, hogy NEM mentettünk
         verify(applicationRepository, never()).save(any());
     }
 }

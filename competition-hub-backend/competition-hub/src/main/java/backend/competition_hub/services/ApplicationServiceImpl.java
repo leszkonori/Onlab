@@ -50,14 +50,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             return ResponseEntity.badRequest().body("Task not found.");
         }
 
-        // 1. ELLENŐRZÉS: Kiesett-e a felhasználó?
         if (task.getEliminatedApplicants() != null && task.getEliminatedApplicants().contains(keycloakUserName)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ezt a felhasználót a Task kiírója kizárta/elutasította a versenyből.");
         }
 
         Round targetRound = null;
         if (roundId != null) {
-            // 2. ELLENŐRZÉS: Round keresése a Task.rounds listában (Task entitáson keresztül)
             if (task.getRounds() == null) {
                 return ResponseEntity.badRequest().body("Round not found in this Task.");
             }
@@ -70,7 +68,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 return ResponseEntity.badRequest().body("Round not found in this Task.");
             }
 
-            // 3. ELLENŐRZÉS: Határidő lejárt-e?
             if (targetRound.getDeadline().isBefore(LocalDate.now())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("A kiválasztott forduló beküldési határideje lejárt.");
             }
@@ -311,14 +308,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         return apps.stream()
                 .filter(app -> {
                     Task t = app.getTask();
-                    // mivel a Task entitásban az eliminatedApplicants ElementCollection van
-                    // (EAGER fetch-csel a Task entitásban, és a findByKeycloakUserName nem tölti be a Task-ot rounds-szal),
-                    // itt van némi Hibernate trükközés, de a kódod szétválasztásánál maradok.
                     return !t.getEliminatedApplicants().contains(username);
                 })
                 .map(app -> {
                     Task t = app.getTask();
-                    // Feltételezve, hogy a Task-hoz tartozó Rounds betöltésre kerül (Lazy betöltési probléma lehet, de a megadott kód ezt feltételezi)
                     Instant lastActivated = t.getRounds() != null ? t.getRounds().stream()
                             .map(Round::getActivatedAt)
                             .filter(Objects::nonNull)
